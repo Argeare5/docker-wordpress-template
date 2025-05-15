@@ -21,30 +21,54 @@ jobs:
         uses: actions/checkout@v4 # Using version 4, check for latest stable version
 
       # Step 2: Create .env file for server from GitHub Secrets
-      # This step generates the .env file that will be deployed to the server.
       - name: Create server .env file
+        # Pass all secrets as environment variables to this step for safer handling
+        env:
+          VAR_PROD_PROJECT_NAME: ${{ secrets.PROD_PROJECT_NAME }}
+          VAR_PROD_MYSQL_ROOT_PASSWORD: ${{ secrets.PROD_MYSQL_ROOT_PASSWORD }}
+          VAR_PROD_MYSQL_DATABASE: ${{ secrets.PROD_MYSQL_DATABASE }}
+          VAR_PROD_MYSQL_USER: ${{ secrets.PROD_MYSQL_USER }}
+          VAR_PROD_MYSQL_PASSWORD: ${{ secrets.PROD_MYSQL_PASSWORD }}
+          VAR_PROD_WORDPRESS_HOST_PORT: ${{ secrets.PROD_WORDPRESS_HOST_PORT }}
+          VAR_PROD_WORDPRESS_TABLE_PREFIX: ${{ secrets.PROD_WORDPRESS_TABLE_PREFIX }}
+          VAR_PROD_WORDPRESS_DEBUG: ${{ secrets.PROD_WORDPRESS_DEBUG }}
+          VAR_PROD_WP_ENV: ${{ secrets.PROD_WP_ENV }}
+          VAR_PROD_AUTH_KEY: ${{ secrets.PROD_AUTH_KEY }}
+          VAR_PROD_SECURE_AUTH_KEY: ${{ secrets.PROD_SECURE_AUTH_KEY }}
+          VAR_PROD_LOGGED_IN_KEY: ${{ secrets.PROD_LOGGED_IN_KEY }}
+          VAR_PROD_NONCE_KEY: ${{ secrets.PROD_NONCE_KEY }}
+          VAR_PROD_AUTH_SALT: ${{ secrets.PROD_AUTH_SALT }}
+          VAR_PROD_SECURE_AUTH_SALT: ${{ secrets.PROD_SECURE_AUTH_SALT }}
+          VAR_PROD_LOGGED_IN_SALT: ${{ secrets.PROD_LOGGED_IN_SALT }}
+          VAR_PROD_NONCE_SALT: ${{ secrets.PROD_NONCE_SALT }}
+          VAR_PROD_PHPMYADMIN_PORT: ${{ secrets.PROD_PHPMYADMIN_PORT }}
+          VAR_PROD_PHPMYADMIN_UPLOAD_LIMIT: ${{ secrets.PROD_PHPMYADMIN_UPLOAD_LIMIT }}
         run: |
           echo "Creating .env file for server..."
-          echo "PROD_PROJECT_NAME=${{ secrets.PROD_PROJECT_NAME }}" > .env
-          echo "PROD_MYSQL_ROOT_PASSWORD=${{ secrets.PROD_MYSQL_ROOT_PASSWORD }}" >> .env
-          echo "PROD_MYSQL_DATABASE=${{ secrets.PROD_MYSQL_DATABASE }}" >> .env
-          echo "PROD_MYSQL_USER=${{ secrets.PROD_MYSQL_USER }}" >> .env
-          echo "PROD_MYSQL_PASSWORD=${{ secrets.PROD_MYSQL_PASSWORD }}" >> .env
-          echo "PROD_WORDPRESS_HOST_PORT=${{ secrets.PROD_WORDPRESS_HOST_PORT }}" >> .env
-          echo "PROD_WORDPRESS_TABLE_PREFIX=${{ secrets.PROD_WORDPRESS_TABLE_PREFIX }}" >> .env
-          echo "PROD_WORDPRESS_DEBUG=${{ secrets.PROD_WORDPRESS_DEBUG }}" >> .env
-          echo "PROD_WP_ENV=${{ secrets.PROD_WP_ENV }}" >> .env
-          echo "PROD_AUTH_KEY='${{ secrets.AUTH_KEY }}'" >> .env
-          echo "PROD_SECURE_AUTH_KEY='${{ secrets.SECURE_AUTH_KEY }}'" >> .env
-          echo "PROD_LOGGED_IN_KEY='${{ secrets.LOGGED_IN_KEY }}'" >> .env
-          echo "PROD_NONCE_KEY='${{ secrets.NONCE_KEY }}'" >> .env
-          echo "PROD_AUTH_SALT='${{ secrets.AUTH_SALT }}'" >> .env
-          echo "PROD_SECURE_AUTH_SALT='${{ secrets.SECURE_AUTH_SALT }}'" >> .env
-          echo "PROD_LOGGED_IN_SALT='${{ secrets.LOGGED_IN_SALT }}'" >> .env
-          echo "PROD_NONCE_SALT='${{ secrets.NONCE_SALT }}'" >> .env
-          echo "PROD_PHPMYADMIN_PORT=${{ secrets.PROD_PHPMYADMIN_PORT }}" >> .env
-          echo "PROD_PHPMYADMIN_UPLOAD_LIMIT=${{ secrets.PROD_PHPMYADMIN_UPLOAD_LIMIT }}" >> .env
-          # Add any other variables needed in your server .env file
+          # Using a block to redirect all printf output to .env file
+          {
+            printf "PROD_PROJECT_NAME='%s'\n" "$VAR_PROD_PROJECT_NAME"
+            printf "PROD_MYSQL_ROOT_PASSWORD='%s'\n" "$VAR_PROD_MYSQL_ROOT_PASSWORD"
+            printf "PROD_MYSQL_DATABASE='%s'\n" "$VAR_PROD_MYSQL_DATABASE"
+            printf "PROD_MYSQL_USER='%s'\n" "$VAR_PROD_MYSQL_USER"
+            printf "PROD_MYSQL_PASSWORD='%s'\n" "$VAR_PROD_MYSQL_PASSWORD"
+            printf "PROD_WORDPRESS_HOST_PORT='%s'\n" "$VAR_PROD_WORDPRESS_HOST_PORT"
+            printf "PROD_WORDPRESS_TABLE_PREFIX='%s'\n" "$VAR_PROD_WORDPRESS_TABLE_PREFIX"
+            printf "PROD_WORDPRESS_DEBUG='%s'\n" "$VAR_PROD_WORDPRESS_DEBUG"
+            printf "PROD_WP_ENV='%s'\n" "$VAR_PROD_WP_ENV"
+            printf "PROD_AUTH_KEY='%s'\n" "$VAR_PROD_AUTH_KEY"
+            printf "PROD_SECURE_AUTH_KEY='%s'\n" "$VAR_PROD_SECURE_AUTH_KEY"
+            printf "PROD_LOGGED_IN_KEY='%s'\n" "$VAR_PROD_LOGGED_IN_KEY"
+            printf "PROD_NONCE_KEY='%s'\n" "$VAR_PROD_NONCE_KEY"
+            printf "PROD_AUTH_SALT='%s'\n" "$VAR_PROD_AUTH_SALT"
+            printf "PROD_SECURE_AUTH_SALT='%s'\n" "$VAR_PROD_SECURE_AUTH_SALT"
+            printf "PROD_LOGGED_IN_SALT='%s'\n" "$VAR_PROD_LOGGED_IN_SALT"
+            printf "PROD_NONCE_SALT='%s'\n" "$VAR_PROD_NONCE_SALT"
+            printf "PROD_PHPMYADMIN_PORT='%s'\n" "$VAR_PROD_PHPMYADMIN_PORT"
+            printf "PROD_PHPMYADMIN_UPLOAD_LIMIT='%s'\n" "$VAR_PROD_PHPMYADMIN_UPLOAD_LIMIT"
+          } > .env
+          echo "Finished creating .env file. Content:"
+          cat .env
         # This .env file is created in the root of the checkout in the Actions runner
 
       # Step 3: Deploy files to DigitalOcean Droplet using rsync over SSH

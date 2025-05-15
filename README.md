@@ -1,1 +1,1 @@
-# docker-wordpress-template-1
+# docker-wordpress-template
