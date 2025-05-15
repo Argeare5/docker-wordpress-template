@@ -37,7 +37,7 @@ jobs:
           VAR_PROD_SECURE_AUTH_KEY: ${{ secrets.SECURE_AUTH_KEY }}
           VAR_PROD_LOGGED_IN_KEY: ${{ secrets.LOGGED_IN_KEY }}
           VAR_PROD_NONCE_KEY: ${{ secrets.NONCE_KEY }}
-          VAR_PROD_AUTH_SALT: ${{ secrets.PROD_AUTH_SALT }}
+          VAR_PROD_AUTH_SALT: ${{ secrets.AUTH_SALT }}
           VAR_PROD_SECURE_AUTH_SALT: ${{ secrets.SECURE_AUTH_SALT }}
           VAR_PROD_LOGGED_IN_SALT: ${{ secrets.LOGGED_IN_SALT }}
           VAR_PROD_NONCE_SALT: ${{ secrets.NONCE_SALT }}
