@@ -97,7 +97,6 @@ jobs:
           TARGET: ${{ secrets.SERVER_PROJECT_PATH }} # Your server path: /home/wordpress-template/
 
       # Step 4: Execute deployment commands on the server via SSH
-      # This action runs commands on your remote server after files are deployed.
       - name: Execute remote commands
         uses: appleboy/ssh-action@v1.0.3 # Check for the latest version of this action
         with:
@@ -108,22 +107,43 @@ jobs:
             echo "Navigating to project directory on server: ${{ secrets.SERVER_PROJECT_PATH }}"
             cd ${{ secrets.SERVER_PROJECT_PATH }}
 
-            echo "Current directory:"
-            pwd
-
-            echo "Files in current directory:"
+            echo "Current directory content (before .env move):"
             ls -la
 
-            echo "Pulling latest versions of images specified in docker-compose.prod.yml..."
+            echo "Moving .env file to correct location if it was created by a previous step in root of checkout..."
+            # Assuming .env was created in the root of the checkout ($GITHUB_WORKSPACE) by the 'Create server .env file' step
+            # and rsync copied it to ${{ secrets.SERVER_PROJECT_PATH }}/.env
+            # If it was named .env_server and needs renaming:
+            # if [ -f .env_server ]; then
+            #   echo "Renaming .env_server to .env..."
+            #   mv -f .env_server .env
+            # fi
+            # Ensure .env exists now:
+            if [ ! -f .env ]; then
+              echo "ERROR: Server .env file not found at ${{ secrets.SERVER_PROJECT_PATH }}/.env !"
+              exit 1
+            fi
+            echo "Server .env file content:"
+            cat .env
+
+            echo "Pulling latest versions of base images specified in docker-compose.prod.yml..."
             docker compose -f docker-compose.prod.yml pull
 
             echo "Bringing up Docker containers using docker-compose.prod.yml..."
-            # --remove-orphans removes containers for services no longer defined in the Compose file.
-            # --force-recreate can be useful to ensure containers pick up changes, e.g. in mounted config files.
             docker compose -f docker-compose.prod.yml up -d --force-recreate --remove-orphans
 
-            # Optional: Clean up unused Docker images (be cautious with -a flag)
-            # echo "Pruning old Docker images..."
-            # docker image prune -f
+            echo "Waiting for WordPress container to be up..."
+            # You might need a short sleep or a more robust check if composer install fails immediately
+            sleep 10 
+
+            echo "Running composer install inside the WordPress container..."
+            # Ensure your wordpress_prod service has Composer installed (e.g., via your custom Dockerfile)
+            # The -T flag disables pseudo-tty allocation, which is good for non-interactive scripts.
+            docker compose -f docker-compose.prod.yml exec -T wordpress_prod composer install --no-interaction --no-progress --no-dev --optimize-autoloader --working-dir=/var/www/html/wp-content
+
+            echo "Optional: Running WordPress specific commands (e.g., clear cache, DB updates if needed via wp-cli)"
+            # docker compose -f docker-compose.prod.yml exec -T wordpress_prod wp theme activate your_theme_slug --allow-root
+            # docker compose -f docker-compose.prod.yml exec -T wordpress_prod wp cache flush --allow-root
+            # docker compose -f docker-compose.prod.yml exec -T wordpress_prod wp core update-db --allow-root
 
             echo "Deployment finished successfully!"

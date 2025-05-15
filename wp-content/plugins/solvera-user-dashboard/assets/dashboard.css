@@ -1,0 +1,1921 @@
+/* Стили для Solvera User Dashboard */
+.solvera-dashboard-menu {
+    margin-bottom: 30px;
+}
+.solvera-dashboard-tab-list {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.solvera-dashboard-tab-list li {
+    margin-right: 10px;
+}
+.solvera-dashboard-tab-list li a {
+    display: block;
+    padding: 10px 20px;
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-bottom: none;
+    color: #222;
+    text-decoration: none;
+    border-radius: 4px 4px 0 0;
+    transition: background 0.2s, color 0.2s;
+}
+.solvera-dashboard-tab-list li a.active,
+.solvera-dashboard-tab-list li a:hover {
+    background: #fff;
+    font-weight: bold;
+    border-top: 2px solid #0073aa;
+    color: #0073aa;
+}
+.solvera-dashboard-tab-content {
+    display: none;
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #eee;
+}
+.solvera-dashboard-tab-content.active {
+    display: block;
+}
+
+.solvera-analytics-metrics {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.solvera-analytics-metric {
+    background: #f8f8f8;
+    border-radius: 6px;
+    padding: 10px 18px;
+    font-size: 16px;
+    min-width: 120px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+@media (max-width: 700px) {
+    .solvera-analytics-metrics {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .solvera-analytics-metric {
+        min-width: unset;
+    }
+}
+
+/* --- Основные цвета --- */
+:root {
+    --accent: #7c3aed;
+    --accent-dark: #5b21b6;
+    --accent-light: #ede7f6;
+    --bg-light: #f6f2ff;
+    --text-main: #222;
+    --text-muted: #888;
+}
+
+/* --- Карточки --- */
+.solvera-card {
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 16px 0 rgba(80, 41, 186, 0.07);
+    padding: 32px 32px 24px 32px;
+    box-sizing: border-box;
+    transition: box-shadow 0.2s;
+}
+@media (max-width: 1200px) {
+    .solvera-card {
+        max-width: 95vw;
+    }
+}
+@media (max-width: 700px) {
+    .solvera-card {
+        max-width: 100vw;
+        padding: 16px 4vw 16px 4vw;
+    }
+}
+
+/* --- Заголовки --- */
+.solvera-title {
+    color: var(--accent);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    letter-spacing: -1px;
+}
+.solvera-subtitle {
+    color: var(--accent-dark);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+/* --- Кнопки --- */
+.solvera-btn {
+    background: #5B21B6;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 28px;
+    font-size: 1.08rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.08);
+    margin-top: 8px;
+    margin-bottom: 8px;
+    display: inline-block;
+    text-decoration: none !important;
+}
+.solvera-btn:hover, .solvera-btn:focus {
+    background: #4B21B6;
+    color: #fff;
+    outline: none;
+}
+.solvera-btn-secondary {
+    background: #fff;
+    color: #5B21B6;
+    border: 1.5px solid #5B21B6;
+    border-radius: 8px;
+    padding: 10px 28px;
+    font-size: 1.08rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    display: inline-block;
+    text-decoration: none !important;
+}
+.solvera-btn-secondary:hover, .solvera-btn-secondary:focus {
+    background: #ede7f6;
+    color: #4B21B6;
+    outline: none;
+}
+.solvera-btn:disabled,
+.solvera-btn[disabled],
+.solvera-btn-secondary:disabled,
+.solvera-btn-secondary[disabled] {
+    background: #f3f3f3 !important;
+    color: #bdbdbd !important;
+    border: 1.5px solid #e0e0e0 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+}
+
+/* --- Формы --- */
+.solvera-form input[type="text"],
+.solvera-form input[type="url"],
+.solvera-form input[type="email"],
+.solvera-form input[type="number"],
+.solvera-form input[type="password"],
+.solvera-form textarea,
+.solvera-form select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--accent-light);
+    border-radius: 6px;
+    font-size: 1.05rem;
+    background: var(--bg-light);
+    color: var(--text-main);
+    margin-bottom: 14px;
+    transition: border 0.2s;
+}
+.solvera-form input:focus,
+.solvera-form textarea:focus,
+.solvera-form select:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+/* --- Метрики --- */
+.solvera-metrics {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.solvera-metric {
+    background: var(--bg-light);
+    border-radius: 8px;
+    padding: 14px 22px;
+    font-size: 1.1rem;
+    min-width: 120px;
+    text-align: center;
+    color: var(--accent-dark);
+    box-shadow: 0 1px 3px rgba(124,58,237,0.04);
+    font-weight: 600;
+}
+@media (max-width: 700px) {
+    .solvera-metrics {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .solvera-metric {
+        min-width: unset;
+    }
+}
+
+/* --- Таб-меню --- */
+.solvera-dashboard-tab-list li a.active,
+.solvera-dashboard-tab-list li a:hover {
+    background: #fff;
+    font-weight: bold;
+    border-top: 2px solid var(--accent);
+    color: var(--accent);
+}
+
+/* --- Боковое меню --- */
+.solvera-dashboard-menu-vertical {
+    float: left;
+    width: 220px;
+    min-height: 600px;
+    margin-right: 40px;
+    background: linear-gradient(135deg, #f8f6ff 0%, #ede7f6 100%);
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(124,58,237,0.08);
+    padding: 24px 0 24px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border: 1.5px solid #ede7f6;
+}
+.solvera-dashboard-tab-list {
+    flex-direction: column;
+    gap: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.solvera-dashboard-tab-list li {
+    margin: 0;
+}
+.solvera-dashboard-tab-list li a {
+    display: block;
+    padding: 14px 28px;
+    border: none;
+    border-left: 4px solid transparent;
+    background: none;
+    color: #5B21B6;
+    font-weight: 500;
+    font-size: 1.08rem;
+    border-radius: 0 12px 12px 0;
+    transition: background 0.18s, border 0.18s, color 0.18s;
+    position: relative;
+}
+.solvera-dashboard-tab-list li a.active,
+.solvera-dashboard-tab-list li a:hover {
+    background: #fff;
+    border-left: 4px solid #7c3aed;
+    color: #7c3aed;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.07);
+    z-index: 2;
+}
+@media (max-width: 900px) {
+    .solvera-dashboard-menu-vertical {
+        float: none;
+        width: 100%;
+        min-height: unset;
+        margin-right: 0;
+        margin-bottom: 24px;
+        border-radius: 14px;
+        box-shadow: 0 2px 16px rgba(80,0,180,0.04);
+        padding: 10px 0;
+    }
+    .solvera-dashboard-tab-list {
+        flex-direction: row;
+        gap: 8px;
+        justify-content: center;
+    }
+    .solvera-dashboard-tab-list li a {
+        border-radius: 8px;
+        padding: 10px 18px;
+        font-size: 1rem;
+        border-left: none;
+    }
+    .solvera-dashboard-tab-list li a.active,
+    .solvera-dashboard-tab-list li a:hover {
+        border-left: none;
+        background: #ede7f6;
+        color: #7c3aed;
+        box-shadow: 0 2px 8px rgba(124,58,237,0.07);
+    }
+}
+/* --- Конец меню --- */
+
+.solvera-dashboard-content {
+    margin: 0 auto 0 260px;
+    max-width: 1100px;
+    padding: 32px 0 0 0;
+    padding-bottom: 64px;
+}
+@media (max-width: 1200px) {
+    .solvera-dashboard-content {
+        max-width: 100%;
+    }
+}
+@media (max-width: 900px) {
+    .solvera-dashboard-content {
+        margin-left: 0;
+        max-width: 100%;
+        padding: 0;
+        padding-bottom: 64px;
+    }
+}
+
+body {
+    background: #f5f6fa;
+    font-family: 'Inter', 'Roboto', 'Arial', sans-serif;
+    color: #232136;
+    font-size: 16px;
+}
+
+.solvera-dashboard-menu-vertical {
+    float: left;
+    width: 220px;
+    min-height: 600px;
+    margin-right: 40px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(80,0,180,0.04);
+    padding: 18px 0;
+}
+
+.solvera-dashboard-tab-list {
+    flex-direction: column;
+    gap: 0;
+}
+.solvera-dashboard-tab-list li {
+    margin: 0;
+}
+.solvera-dashboard-tab-list li a {
+    display: block;
+    padding: 14px 28px;
+    border: none;
+    border-left: 4px solid transparent;
+    background: none;
+    color: #232136;
+    font-weight: 500;
+    font-size: 1.08rem;
+    border-radius: 0 8px 8px 0;
+    transition: background 0.2s, border 0.2s, color 0.2s;
+}
+.solvera-dashboard-tab-list li a.active,
+.solvera-dashboard-tab-list li a:hover {
+    background: #f5f6fa;
+    border-left: 4px solid #5B21B6;
+    color: #5B21B6;
+    font-weight: 600;
+}
+
+.solvera-title {
+    color: #5B21B6;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    letter-spacing: -1px;
+}
+
+.solvera-subtitle {
+    color: #232136;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.solvera-metrics {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.solvera-metric {
+    background: #f5f6fa;
+    border-radius: 8px;
+    padding: 14px 22px;
+    font-size: 1.1rem;
+    min-width: 120px;
+    text-align: center;
+    color: #5B21B6;
+    box-shadow: 0 1px 3px rgba(124,58,237,0.04);
+    font-weight: 600;
+}
+
+input[type="text"], input[type="url"], input[type="email"], input[type="number"], textarea, select {
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 1.05rem;
+    background: #fafaff;
+    color: #232136;
+    margin-bottom: 14px;
+    transition: border 0.2s;
+}
+input:focus, textarea:focus, select:focus {
+    border-color: #5B21B6;
+    outline: none;
+}
+
+@media (max-width: 900px) {
+    .solvera-dashboard-menu-vertical {
+        float: none;
+        width: 100%;
+        min-height: unset;
+        margin-right: 0;
+        margin-bottom: 24px;
+        border-radius: 14px;
+        box-shadow: 0 2px 16px rgba(80,0,180,0.04);
+    }
+    .solvera-metrics {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .solvera-metric {
+        min-width: unset;
+    }
+}
+
+.solvera-alert {
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 12px 0 10px 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    box-shadow: 0 2px 8px rgba(80,0,180,0.04);
+    background: #fff;
+    border-left: 5px solid #e53935;
+    color: #b71c1c;
+    position: relative;
+}
+.solvera-alert-success {
+    border-left-color: #43a047;
+    color: #256029;
+    background: #f6fff6;
+}
+.solvera-alert-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.solvera-alert-details {
+    margin-top: 8px;
+    font-size: 0.97em;
+    color: #6d4c41;
+}
+.solvera-alert-toggle {
+    background: none;
+    border: none;
+    color: #5B21B6;
+    cursor: pointer;
+    font-size: 0.97em;
+    padding: 0;
+    margin-left: 8px;
+    text-decoration: underline;
+}
+
+.solvera-site-block {
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 28px;
+    margin-bottom: 28px;
+}
+.solvera-site-status-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.solvera-site-status-label {
+    font-weight: 500;
+    color: #232136;
+    min-width: 120px;
+}
+.solvera-site-status-connected {
+    color: #43a047;
+    font-weight: 600;
+}
+.solvera-site-status-not {
+    color: #e53935;
+    font-weight: 600;
+}
+.solvera-site-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.solvera-btn, .solvera-btn-secondary {
+    min-width: 120px;
+    text-align: center;
+}
+.solvera-site-gads-block {
+    margin-top: 10px;
+}
+
+.solvera-sites-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+.solvera-sites-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+.solvera-sites-table th, .solvera-sites-table td {
+    padding: 14px 12px;
+    background: #fff;
+    border-radius: 10px;
+    font-size: 1rem;
+    vertical-align: middle;
+    text-align: left;
+}
+.solvera-sites-table th {
+    color: #5B21B6;
+    font-size: 1.08rem;
+    font-weight: 700;
+    background: #f5f6fa;
+    border-bottom: 2px solid #ede7f6;
+}
+.solvera-site-btn {
+    min-width: 120px;
+    text-align: center;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+.solvera-site-btn-connect {
+    background: #5B21B6;
+    color: #fff;
+}
+.solvera-site-btn-connect.connected {
+    background: #43a047;
+    color: #fff;
+    cursor: default;
+}
+.solvera-site-btn-connect.failed {
+    background: #e53935;
+    color: #fff;
+    cursor: pointer;
+}
+.solvera-site-btn-check {
+    background: #ede7f6;
+    color: #5B21B6;
+    border: 1.5px solid #5B21B6;
+}
+.solvera-site-btn-check.checked {
+    background: #43a047;
+    color: #fff;
+    border: none;
+    cursor: default;
+}
+.solvera-site-btn-check.failed {
+    background: #e53935;
+    color: #fff;
+    border: none;
+}
+.solvera-site-btn-delete {
+    background: #fff;
+    color: #e53935;
+    border: 1.5px solid #e53935;
+}
+.solvera-site-btn-delete:hover {
+    background: #e53935;
+    color: #fff;
+}
+.solvera-site-name {
+    font-weight: 700;
+    color: #232136;
+    font-size: 1.08rem;
+}
+.solvera-modal-bg {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.18);
+    align-items: center;
+    justify-content: center;
+}
+.solvera-modal-bg.active { display: flex; }
+.solvera-modal {
+    background: #fff;
+    padding: 32px 28px;
+    border-radius: 14px;
+    max-width: 480px;
+    width: 90vw;
+    box-shadow: 0 2px 16px rgba(80,0,180,0.12);
+    position: relative;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+.solvera-modal-title {
+    font-weight: 700;
+    font-size: 1.15rem;
+    margin-bottom: 12px;
+}
+.solvera-modal-close {
+    position: absolute;
+    right: 18px; top: 18px;
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    color: #888;
+    cursor: pointer;
+    z-index: 10;
+}
+.solvera-modal textarea {
+    width: 100%;
+    font-size: 14px;
+    margin-bottom: 10px;
+    background: #f5f6fa;
+}
+.solvera-modal-success {
+    color: #43a047;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+.solvera-modal-error {
+    color: #e53935;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.solvera-site-error-label {
+    color: #e53935;
+    font-weight: 600;
+    margin-left: 10px;
+    cursor: pointer;
+    text-decoration: underline dotted;
+    font-size: 0.98em;
+    vertical-align: middle;
+}
+.solvera-site-error-label:hover {
+    text-decoration: underline;
+}
+
+#checkModalContent {
+    max-height: 60vh;
+    overflow-y: auto;
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+.solvera-card-secondary {
+    background: #f8f6ff;
+    border: none;
+    box-shadow: none;
+    margin-bottom: 18px;
+}
+.solvera-metric-main {
+    background: #ede7f6;
+    color: #5B21B6;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-radius: 12px;
+    padding: 18px 28px;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.07);
+}
+.solvera-metric-icon {
+    font-size: 2.2rem;
+    color: #7c3aed;
+}
+.solvera-empty-state {
+    text-align: center;
+    padding: 32px 0 18px 0;
+    color: #888;
+}
+.solvera-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    color: #ede7f6;
+}
+.solvera-empty-title {
+    font-size: 1.15rem;
+    margin-bottom: 12px;
+    color: #5B21B6;
+}
+.solvera-form-inline {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    background: none;
+    padding: 0;
+}
+.solvera-form-inline label {
+    margin-bottom: 0;
+    font-weight: 500;
+    color: #5B21B6;
+}
+.solvera-form-inline select {
+    border: 1.5px solid #ede7f6;
+    border-radius: 6px;
+    padding: 6px 18px;
+    font-size: 1rem;
+    background: #fff;
+    color: #232136;
+    min-width: 100px;
+    margin-left: 6px;
+    height: 36px;
+}
+.solvera-form-inline .solvera-btn,
+.solvera-form-inline .solvera-btn-secondary {
+    padding: 7px 18px;
+    font-size: 1rem;
+    height: 36px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+.solvera-btn,
+.solvera-btn-secondary,
+.solvera-btn:visited,
+.solvera-btn-secondary:visited {
+    text-decoration: none !important;
+}
+.solvera-btn-secondary {
+    background: #fff;
+    color: #5B21B6;
+    border: 1.5px solid #5B21B6;
+    font-weight: 500;
+}
+.solvera-btn-secondary:hover,
+.solvera-btn-secondary:focus {
+    background: #ede7f6;
+    color: #4B21B6;
+}
+
+.solvera-metrics-row,
+.solvera-actions-row,
+.solvera-form-inline {
+    width: 100%;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    margin-bottom: 18px;
+}
+.solvera-metrics-row {
+    justify-content: flex-start;
+}
+.solvera-actions-row {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+.solvera-form-inline {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+.solvera-metric-main {
+    min-width: 220px;
+}
+.solvera-sites-table {
+    width: 100%;
+}
+
+.solvera-campaigns-card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+.solvera-metric-wide {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    box-sizing: border-box;
+    margin-bottom: 0;
+}
+.solvera-metric-main {
+    background: #ede7f6;
+    border-radius: 12px;
+    padding: 18px 32px;
+    min-width: 260px;
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.solvera-metric-label {
+    color: #5B21B6;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.solvera-metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #232136;
+}
+.solvera-campaigns-actions-wide {
+    width: 100%;
+    display: flex;
+    gap: 12px;
+    margin: 18px 0;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.solvera-campaigns-actions-wide .solvera-btn,
+.solvera-campaigns-actions-wide .solvera-btn-secondary {
+    min-width: 220px;
+}
+.solvera-campaigns-filter {
+    width: 100%;
+    margin-bottom: 18px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.solvera-campaigns-filter label {
+    margin-bottom: 0;
+    font-weight: 500;
+    color: #5B21B6;
+}
+.solvera-campaigns-filter select {
+    border: 1.5px solid #ede7f6;
+    border-radius: 6px;
+    padding: 6px 18px;
+    font-size: 1rem;
+    background: #fff;
+    color: #232136;
+    min-width: 100px;
+    margin-left: 6px;
+    height: 36px;
+}
+.solvera-campaigns-filter .solvera-btn,
+.solvera-campaigns-filter .solvera-btn-secondary {
+    padding: 7px 18px;
+    font-size: 1rem;
+    height: 36px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* Стили для страницы текущего тарифа */
+.solvera-current-plan {
+    background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
+    border-radius: 24px;
+    padding: 40px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 24px rgba(80,0,180,0.08);
+    border: 1px solid rgba(124,58,237,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.solvera-current-plan::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(124,58,237,0.1) 0%, rgba(124,58,237,0) 70%);
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+    pointer-events: none;
+}
+
+.solvera-plan-header {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.solvera-plan-icon {
+    font-size: 2.8rem;
+    background: linear-gradient(135deg, #7c3aed 0%, #5B21B6 100%);
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 24px;
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(124,58,237,0.2);
+    transform: rotate(-5deg);
+    transition: transform 0.3s ease;
+}
+
+.solvera-plan-icon:hover {
+    transform: rotate(0deg);
+}
+
+.solvera-plan-info {
+    flex: 1;
+}
+
+.solvera-plan-title {
+    font-size: 2.2rem;
+    background: linear-gradient(135deg, #232136 0%, #5B21B6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0 0 12px 0;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.solvera-plan-expiry {
+    color: #666;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.solvera-plan-expiry strong {
+    color: #5B21B6;
+    font-weight: 600;
+}
+
+.solvera-plan-progress {
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.solvera-progress-bar {
+    height: 12px;
+    background: #ede7f6;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.solvera-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7c3aed 0%, #5B21B6 100%);
+    border-radius: 6px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.solvera-progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.2) 50%,
+        rgba(255,255,255,0) 100%
+    );
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.solvera-progress-text {
+    color: #666;
+    font-size: 1rem;
+    text-align: right;
+    font-weight: 500;
+}
+
+.solvera-features-title {
+    font-size: 1.4rem;
+    color: #232136;
+    margin: 0 0 24px 0;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+}
+
+.solvera-features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.solvera-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: rgba(255,255,255,0.8);
+    border-radius: 12px;
+    color: #232136;
+    font-size: 1.1rem;
+    border: 1px solid rgba(124,58,237,0.1);
+    transition: all 0.3s ease;
+}
+
+.solvera-feature-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(124,58,237,0.1);
+    border-color: rgba(124,58,237,0.2);
+}
+
+.solvera-feature-icon {
+    color: #5B21B6;
+    font-weight: bold;
+    font-size: 1.2rem;
+    background: #ede7f6;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.solvera-plan-actions {
+    margin-top: 40px;
+    display: flex;
+    justify-content: flex-end;
+    position: relative;
+    z-index: 1;
+}
+
+.solvera-btn-primary {
+    background: linear-gradient(135deg, #7c3aed 0%, #5B21B6 100%);
+    color: #fff;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(124,58,237,0.2);
+}
+
+.solvera-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(124,58,237,0.3);
+}
+
+.solvera-payment-history {
+    background: #fff;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 4px 24px rgba(80,0,180,0.08);
+    border: 1px solid rgba(124,58,237,0.1);
+}
+
+.solvera-history-title {
+    font-size: 1.4rem;
+    color: #232136;
+    margin: 0 0 32px 0;
+    font-weight: 700;
+}
+
+.solvera-transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.solvera-transaction-item {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 20px;
+    padding: 20px;
+    background: #f8f9ff;
+    border-radius: 12px;
+    align-items: center;
+    border: 1px solid rgba(124,58,237,0.1);
+    transition: all 0.3s ease;
+}
+
+.solvera-transaction-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(124,58,237,0.1);
+}
+
+.solvera-transaction-date {
+    color: #666;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.solvera-transaction-plan {
+    color: #232136;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.solvera-transaction-amount {
+    color: #5B21B6;
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-align: right;
+}
+
+.solvera-empty-state {
+    text-align: center;
+    padding: 60px 32px;
+    background: #f8f9ff;
+    border-radius: 16px;
+    border: 1px solid rgba(124,58,237,0.1);
+}
+
+.solvera-empty-icon {
+    font-size: 4rem;
+    margin-bottom: 24px;
+    color: #ede7f6;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+.solvera-empty-title {
+    font-size: 1.8rem;
+    color: #232136;
+    margin: 0 0 16px 0;
+    font-weight: 700;
+}
+
+.solvera-empty-text {
+    color: #666;
+    margin: 0 0 32px 0;
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .solvera-current-plan {
+        padding: 24px;
+    }
+    
+    .solvera-plan-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+    
+    .solvera-plan-icon {
+        margin: 0 auto;
+    }
+    
+    .solvera-plan-title {
+        font-size: 1.8rem;
+    }
+    
+    .solvera-features-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .solvera-transaction-item {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 12px;
+        padding: 16px;
+    }
+    
+    .solvera-transaction-amount {
+        text-align: center;
+    }
+    
+    .solvera-btn-primary {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* --- Карточки тарифных планов --- */
+.solvera-plans-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: flex-start;
+    margin-bottom: 40px;
+    align-items: stretch;
+}
+.solvera-plan-card {
+    background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
+    border-radius: 24px;
+    box-shadow: 0 4px 24px rgba(80,0,180,0.08);
+    border: 1.5px solid #ede7f6;
+    padding: 36px 28px 28px 28px;
+    min-width: 320px;
+    flex: 1 1 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    position: relative;
+    transition: box-shadow 0.2s, border 0.2s, transform 0.2s;
+    height: 100%;
+}
+@media (min-width: 900px) {
+    .solvera-plan-card {
+        min-height: 480px;
+    }
+}
+.solvera-plan-card:hover {
+    box-shadow: 0 8px 32px rgba(124,58,237,0.13);
+    border-color: #c3b5f7;
+    transform: translateY(-4px) scale(1.02);
+}
+.solvera-plan-card-current {
+    border: 2.5px solid #7c3aed;
+    box-shadow: 0 8px 32px rgba(124,58,237,0.18);
+}
+.solvera-plan-card-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+.solvera-plan-card-icon {
+    font-size: 2.3rem;
+    background: linear-gradient(135deg, #7c3aed 0%, #5B21B6 100%);
+    color: #fff;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.13);
+}
+.solvera-plan-card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #232136;
+    letter-spacing: -0.5px;
+}
+.solvera-plan-card-price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #5B21B6;
+    margin-bottom: 18px;
+}
+.solvera-plan-card-currency {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.solvera-plan-card-period {
+    font-size: 1rem;
+    color: #888;
+    font-weight: 400;
+}
+.solvera-plan-card-free {
+    color: #43a047;
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: 0.5px;
+}
+.solvera-plan-card-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.solvera-plan-card-feature-icon {
+    color: #5B21B6;
+    font-weight: bold;
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+.solvera-plan-card-actions {
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+.solvera-plan-card-current-label {
+    background: #ede7f6;
+    color: #5B21B6;
+    font-weight: 700;
+    font-size: 1rem;
+    border-radius: 8px;
+    padding: 8px 18px;
+    box-shadow: 0 1px 4px rgba(124,58,237,0.07);
+    letter-spacing: 0.2px;
+}
+@media (max-width: 900px) {
+    .solvera-plans-list {
+        flex-direction: column;
+        gap: 24px;
+        align-items: stretch;
+    }
+    .solvera-plan-card {
+        min-width: unset;
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+/* --- Карточки интеграций --- */
+.solvera-integrations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 24px;
+    align-items: center;
+}
+.solvera-integration-card {
+    min-width: 0;
+    max-width: 800px;
+    width: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 32px 22px 28px;
+    box-sizing: border-box;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(80,0,180,0.04);
+    border: 1.5px solid #ede7f6;
+    position: relative;
+}
+.solvera-integration-card + .solvera-integration-card {
+    margin-top: 18px;
+    border-top: 2px solid #f2f2f7;
+    box-shadow: 0 2px 12px rgba(80,0,180,0.04);
+}
+.solvera-integration-card-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 0;
+    width: auto;
+}
+.solvera-integration-card-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.solvera-integration-card-title {
+    font-size: 1.13rem;
+    font-weight: 700;
+    color: #232136;
+    letter-spacing: -0.5px;
+    margin-bottom: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.solvera-integration-card-url a {
+    color: #5B21B6;
+    font-size: 0.98rem;
+    text-decoration: underline dotted;
+    word-break: break-all;
+}
+.solvera-integration-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 0;
+    flex-wrap: nowrap;
+    width: auto;
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+.solvera-integration-actions-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+.solvera-site-btn,
+.solvera-site-btn-connect,
+.solvera-site-btn-check,
+.solvera-site-btn-delete {
+    min-width: 150px;
+    max-width: 150px;
+    width: 150px;
+    text-align: center;
+    box-sizing: border-box;
+}
+.solvera-site-error-label {
+    color: #e53935;
+    font-weight: 600;
+    margin-right: 6px;
+    cursor: pointer;
+    text-decoration: underline dotted;
+    font-size: 0.98em;
+    vertical-align: middle;
+    display: inline-block;
+    white-space: nowrap;
+}
+@media (max-width: 900px) {
+    .solvera-integration-card {
+        max-width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 18px 8px 14px 8px;
+    }
+    .solvera-integration-card-actions {
+        flex-direction: row;
+        width: 100%;
+        justify-content: flex-start;
+        align-items: center;
+        margin-top: 14px;
+        gap: 10px;
+    }
+    .solvera-integration-actions-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .solvera-site-btn,
+    .solvera-site-btn-connect,
+    .solvera-site-btn-check,
+    .solvera-site-btn-delete {
+        min-width: 100%;
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+/* --- AI ассистент --- */
+.solvera-ai-card {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 36px 36px 36px;
+    background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
+    border-radius: 24px;
+    box-shadow: 0 4px 24px rgba(80,0,180,0.08);
+    border: 1.5px solid #ede7f6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.solvera-ai-header {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-bottom: 32px;
+}
+.solvera-ai-icon {
+    font-size: 3.2rem;
+    background: linear-gradient(135deg, #7c3aed 0%, #5B21B6 100%);
+    color: #fff;
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(124,58,237,0.13);
+    animation: float 3s ease-in-out infinite;
+}
+.solvera-ai-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #5B21B6;
+    margin-bottom: 6px;
+}
+.solvera-ai-subtitle {
+    color: #888;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+.solvera-ai-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 18px;
+    width: 100%;
+}
+.solvera-ai-illustration {
+    font-size: 3.5rem;
+    margin-bottom: 18px;
+    color: #ede7f6;
+    animation: pulse 2.5s infinite;
+}
+.solvera-ai-placeholder-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #232136;
+    margin-bottom: 10px;
+}
+.solvera-ai-placeholder-text {
+    color: #666;
+    font-size: 1.08rem;
+    text-align: center;
+    max-width: 420px;
+}
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* --- Кампании --- */
+.solvera-campaigns-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+.solvera-campaigns-title-block {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+.solvera-campaigns-title-icon {
+    font-size: 2.3rem;
+    background: linear-gradient(135deg, #7c3aed 0%, #5B21B6 100%);
+    color: #fff;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.13);
+}
+.solvera-campaigns-title {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #5B21B6;
+    margin-bottom: 4px;
+}
+.solvera-campaigns-subtitle {
+    color: #888;
+    font-size: 1.08rem;
+    font-weight: 500;
+}
+.solvera-campaigns-actions {
+    display: flex;
+    gap: 12px;
+}
+.solvera-campaigns-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 18px;
+}
+.solvera-campaigns-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    background: none;
+}
+.solvera-campaigns-table th, .solvera-campaigns-table td {
+    padding: 14px 12px;
+    background: #fff;
+    border-radius: 10px;
+    font-size: 1rem;
+    vertical-align: middle;
+    text-align: left;
+}
+.solvera-campaigns-table th {
+    color: #5B21B6;
+    font-size: 1.08rem;
+    font-weight: 700;
+    background: #f5f6fa;
+    border-bottom: 2px solid #ede7f6;
+}
+.solvera-campaigns-table-title {
+    font-weight: 700;
+    color: #232136;
+    font-size: 1.08rem;
+}
+.solvera-campaigns-type-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.98rem;
+    background: #ede7f6;
+    color: #5B21B6;
+}
+.solvera-campaigns-type-google {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+.solvera-campaigns-type-facebook {
+    background: #e3eafc;
+    color: #1976d2;
+}
+.solvera-campaigns-type-both {
+    background: #ede7f6;
+    color: #5B21B6;
+}
+.solvera-campaigns-status-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.98rem;
+}
+.solvera-campaigns-status-badge.active {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+.solvera-campaigns-status-badge.paused {
+    background: #fff8e1;
+    color: #fbc02d;
+}
+.solvera-campaigns-status-badge.finished {
+    background: #ececec;
+    color: #888;
+}
+.solvera-campaigns-status-badge.draft {
+    background: #ede7f6;
+    color: #5B21B6;
+}
+.solvera-campaigns-empty {
+    padding: 48px 0 32px 0;
+}
+@media (max-width: 700px) {
+    .solvera-campaigns-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    .solvera-campaigns-title-block {
+        gap: 10px;
+    }
+    .solvera-campaigns-table th, .solvera-campaigns-table td {
+        padding: 10px 6px;
+        font-size: 0.97rem;
+    }
+}
+
+/* Стили для страницы создания Google Ads кампании */
+.solvera-dashboard-header {
+    margin-bottom: 20px;
+}
+
+.solvera-dashboard-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.solvera-dashboard-subtitle {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.solvera-dashboard-form {
+    margin-bottom: 20px;
+}
+
+.solvera-dashboard-form-group {
+    margin-bottom: 15px;
+}
+
+.solvera-dashboard-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.solvera-dashboard-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+}
+
+.solvera-dashboard-button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.solvera-dashboard-button:hover {
+    background-color: #0056b3;
+}
+
+.solvera-dashboard-error {
+    padding: 10px;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.solvera-dashboard-message {
+    padding: 10px;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.solvera-dashboard-details {
+    margin: 10px 0;
+}
+
+.solvera-dashboard-summary {
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #007bff;
+}
+
+.solvera-dashboard-pre {
+    background: #f8f8f8;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 10px;
+    max-width: 900px;
+    overflow: auto;
+    border-radius: 4px;
+}
+
+.solvera-dashboard-directions {
+    margin-top: 20px;
+}
+
+.solvera-dashboard-category,
+.solvera-dashboard-services,
+.solvera-dashboard-geo,
+.solvera-dashboard-phone {
+    padding: 8px 12px;
+    background-color: #f8f8f8;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.solvera-dashboard-service {
+    margin-bottom: 5px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .solvera-dashboard-title {
+        font-size: 20px;
+    }
+    .solvera-dashboard-subtitle {
+        font-size: 14px;
+    }
+    .solvera-dashboard-select,
+    .solvera-dashboard-button {
+        width: 100%;
+    }
+} 
+/* Кампании */
+.solvera-campaigns-card {
+    padding: 24px;
+}
+
+.solvera-campaigns-filter {
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.solvera-campaigns-filter label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.solvera-campaigns-filter select {
+    min-width: 160px;
+}
+
+.solvera-campaigns-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.solvera-campaigns-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 500;
+    color: #666;
+    border-bottom: 1px solid #eee;
+}
+
+.solvera-campaigns-table td {
+    padding: 16px;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.solvera-campaigns-table-title {
+    font-weight: 500;
+    color: #333;
+}
+
+.solvera-campaigns-type-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.solvera-campaigns-type-google {
+    background: #E8F0FE;
+    color: #1A73E8;
+}
+
+.solvera-campaigns-type-facebook {
+    background: #E7F3FF;
+    color: #1877F2;
+}
+
+.solvera-campaigns-status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.solvera-campaigns-status-badge.active {
+    background: #E6F4EA;
+    color: #137333;
+}
+
+.solvera-campaigns-status-badge.paused {
+    background: #FEF7E0;
+    color: #B06000;
+}
+
+.solvera-campaigns-status-badge.finished {
+    background: #F1F3F4;
+    color: #5F6368;
+}
+
+.solvera-campaigns-status-badge.draft {
+    background: #E8EAED;
+    color: #5F6368;
+}
+
+.solvera-campaigns-empty {
+    padding: 48px 0;
+    text-align: center;
+}
+
+.solvera-campaigns-empty .solvera-btn {
+    margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+    .solvera-campaigns-filter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .solvera-campaigns-filter select {
+        width: 100%;
+    }
+    
+    .solvera-campaigns-table {
+        display: block;
+        overflow-x: auto;
+    }
+} 
