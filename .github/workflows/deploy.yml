@@ -1,0 +1,105 @@
+# .github/workflows/deploy.yml
+
+name: Deploy WordPress to DigitalOcean Droplet
+
+# Controls when the action will run.
+# Triggers the workflow on push events to the 'main' branch.
+on:
+  push:
+    branches:
+      - main # Adjust this to your production/deployment branch if different (e.g., master, production)
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest # Specifies the runner environment
+
+    steps:
+      # Step 1: Checkout the repository code
+      # This action checks-out your repository under $GITHUB_WORKSPACE, so your workflow can access it.
+      - name: Checkout code
+        uses: actions/checkout@v4 # Using version 4, check for latest stable version
+
+      # Step 2: Create .env file for server from GitHub Secrets
+      # This step generates the .env file that will be deployed to the server.
+      - name: Create server .env file
+        run: |
+          echo "Creating .env file for server..."
+          echo "PROD_PROJECT_NAME=${{ secrets.PROD_PROJECT_NAME }}" > .env
+          echo "PROD_MYSQL_ROOT_PASSWORD=${{ secrets.PROD_MYSQL_ROOT_PASSWORD }}" >> .env
+          echo "PROD_MYSQL_DATABASE=${{ secrets.PROD_MYSQL_DATABASE }}" >> .env
+          echo "PROD_MYSQL_USER=${{ secrets.PROD_MYSQL_USER }}" >> .env
+          echo "PROD_MYSQL_PASSWORD=${{ secrets.PROD_MYSQL_PASSWORD }}" >> .env
+          echo "PROD_WORDPRESS_HOST_PORT=${{ secrets.PROD_WORDPRESS_HOST_PORT }}" >> .env
+          echo "PROD_WORDPRESS_TABLE_PREFIX=${{ secrets.PROD_WORDPRESS_TABLE_PREFIX }}" >> .env
+          echo "PROD_WORDPRESS_DEBUG=${{ secrets.PROD_WORDPRESS_DEBUG }}" >> .env
+          echo "PROD_WP_ENV=${{ secrets.PROD_WP_ENV }}" >> .env
+          echo "PROD_AUTH_KEY='${{ secrets.PROD_AUTH_KEY }}'" >> .env
+          echo "PROD_SECURE_AUTH_KEY='${{ secrets.PROD_SECURE_AUTH_KEY }}'" >> .env
+          echo "PROD_LOGGED_IN_KEY='${{ secrets.PROD_LOGGED_IN_KEY }}'" >> .env
+          echo "PROD_NONCE_KEY='${{ secrets.PROD_NONCE_KEY }}'" >> .env
+          echo "PROD_AUTH_SALT='${{ secrets.PROD_AUTH_SALT }}'" >> .env
+          echo "PROD_SECURE_AUTH_SALT='${{ secrets.PROD_SECURE_AUTH_SALT }}'" >> .env
+          echo "PROD_LOGGED_IN_SALT='${{ secrets.PROD_LOGGED_IN_SALT }}'" >> .env
+          echo "PROD_NONCE_SALT='${{ secrets.PROD_NONCE_SALT }}'" >> .env
+          echo "PROD_PHPMYADMIN_PORT=${{ secrets.PROD_PHPMYADMIN_PORT }}" >> .env
+          echo "PROD_PHPMYADMIN_UPLOAD_LIMIT=${{ secrets.PROD_PHPMYADMIN_UPLOAD_LIMIT }}" >> .env
+          # Add any other variables needed in your server .env file
+        # This .env file is created in the root of the checkout in the Actions runner
+
+      # Step 3: Deploy files to DigitalOcean Droplet using rsync over SSH
+      # This action securely copies files from the runner to your server.
+      - name: Deploy files using rsync
+        uses: easingthemes/ssh-deploy@v5.0.0 # Check for the latest version of this action
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvc -i --delete --exclude='.git*'" # rsync arguments
+            # -r: recursive
+            # -l: copy symlinks as symlinks
+            # -g: preserve group
+            # -o: preserve owner (useful if deploying as root)
+            # -D: preserve devices and special files
+            # -z: compress file data during the transfer
+            # -v: verbose
+            # -c: skip based on checksum, not mod-time & size
+            # -i: output a change-summary for all updates
+            # --delete: delete extraneous files from dest dirs
+          # --exclude='.git*': exclude .git directory and related files
+          SOURCE: "./"  # Source directory (root of your repository checkout)
+            # This will copy all files including the generated .env, wp-content,
+          # docker-compose.prod.yml, and config/ directory.
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_USER: ${{ secrets.SSH_USER }} # Should be 'root' in your case
+          TARGET: ${{ secrets.SERVER_PROJECT_PATH }} # Your server path: /home/wordpress-template/
+
+      # Step 4: Execute deployment commands on the server via SSH
+      # This action runs commands on your remote server after files are deployed.
+      - name: Execute remote commands
+        uses: appleboy/ssh-action@v1.0.3 # Check for the latest version of this action
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }} # 'root'
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "Navigating to project directory on server: ${{ secrets.SERVER_PROJECT_PATH }}"
+            cd ${{ secrets.SERVER_PROJECT_PATH }}
+
+            echo "Current directory:"
+            pwd
+
+            echo "Files in current directory:"
+            ls -la
+
+            echo "Pulling latest versions of images specified in docker-compose.prod.yml..."
+            docker compose -f docker-compose.prod.yml pull
+
+            echo "Bringing up Docker containers using docker-compose.prod.yml..."
+            # --remove-orphans removes containers for services no longer defined in the Compose file.
+            # --force-recreate can be useful to ensure containers pick up changes, e.g. in mounted config files.
+            docker compose -f docker-compose.prod.yml up -d --force-recreate --remove-orphans
+
+            # Optional: Clean up unused Docker images (be cautious with -a flag)
+            # echo "Pruning old Docker images..."
+            # docker image prune -f
+
+            echo "Deployment finished successfully!"

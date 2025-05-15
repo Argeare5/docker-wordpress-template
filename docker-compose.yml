@@ -21,9 +21,12 @@ services:
     networks:
       - wordpress_network # Connect to the custom network
 
-  # WordPress Service
+  # WordPress Service - Modified to use a Dockerfile
   wordpress:
-    image: wordpress:latest # Use the latest official WordPress image, or specify a version like wordpress:6.4-php8.1-apache
+    build:
+      context: . # Specifies that Docker should look for the Dockerfile in the current directory (project root)
+      args:
+        WORDPRESS_IMAGE_TAG: latest # Argument passed to Dockerfile, can be e.g., php8.1-apache, php8.2-apache
     container_name: ${PROJECT_NAME}_wordpress # Dynamic container name
     depends_on:
       - db # Ensures 'db' service starts before 'wordpress'

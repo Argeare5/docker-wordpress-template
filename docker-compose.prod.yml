@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  db_prod: # Production database service
+    image: mysql:8.0 # Or your preferred MySQL version
+    container_name: ${PROD_PROJECT_NAME}_db # From .env on server
+    restart: always
+    volumes:
+      - prod_db_data:/var/lib/mysql # Named volume for persistent DB data
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PROD_MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${PROD_MYSQL_DATABASE}
+      MYSQL_USER: ${PROD_MYSQL_USER}
+      MYSQL_PASSWORD: ${PROD_MYSQL_PASSWORD}
+    networks:
+      - wordpress_prod_network
+
+  wordpress_prod: # Production WordPress service
+    image: wordpress:php8.2-apache # Specify your desired PHP and WordPress version
+    container_name: ${PROD_PROJECT_NAME}_wordpress # From .env on server
+    restart: always
+    depends_on:
+      - db_prod
+    ports:
+      # Example: "80:80" if serving directly, or an internal port like "8001:80" if behind a host reverse proxy
+      - "${PROD_WORDPRESS_HOST_PORT}:80"
+    volumes:
+      # Mounts wp-content from the deployment directory
+      - ./wp-content:/var/www/html/wp-content
+      # Mount custom PHP configuration for uploads
+      - ./config/php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+    environment:
+      WORDPRESS_DB_HOST: db_prod:3306
+      WORDPRESS_DB_USER: ${PROD_MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${PROD_MYSQL_PASSWORD}
+      WORDPRESS_DB_NAME: ${PROD_MYSQL_DATABASE}
+      WORDPRESS_TABLE_PREFIX: ${PROD_WORDPRESS_TABLE_PREFIX:-wp_}
+      WORDPRESS_DEBUG: ${PROD_WORDPRESS_DEBUG:-0}
+      WP_ENVIRONMENT_TYPE: ${PROD_WP_ENV:-production}
+
+      # WordPress Salts from .env file (created by CI/CD from GitHub Secrets)
+      AUTH_KEY: ${PROD_AUTH_KEY}
+      SECURE_AUTH_KEY: ${PROD_SECURE_AUTH_KEY}
+      LOGGED_IN_KEY: ${PROD_LOGGED_IN_KEY}
+      NONCE_KEY: ${PROD_NONCE_KEY}
+      AUTH_SALT: ${PROD_AUTH_SALT}
+      SECURE_AUTH_SALT: ${PROD_SECURE_AUTH_SALT}
+      LOGGED_IN_SALT: ${PROD_LOGGED_IN_SALT}
+      NONCE_SALT: ${PROD_NONCE_SALT}
+    networks:
+      - wordpress_prod_network
+
+  phpmyadmin_prod: # Production phpMyAdmin service
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: ${PROD_PROJECT_NAME}_phpmyadmin
+    restart: unless-stopped # Or 'always' if you prefer
+    depends_on:
+      - db_prod
+    ports:
+      # Expose phpMyAdmin on a non-standard port for obscurity, e.g., 8181.
+      # IMPORTANT: This port MUST be secured (e.g., UFW allow from specific IPs only,
+      # or placed behind a reverse proxy with authentication).
+      - "${PROD_PHPMYADMIN_PORT:-8181}:80" # Default to 8181 if not set in .env
+    environment:
+      PMA_HOST: db_prod # Links to the database service
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${PROD_MYSQL_ROOT_PASSWORD} # For root login to phpMyAdmin
+      UPLOAD_LIMIT: ${PROD_PHPMYADMIN_UPLOAD_LIMIT:-1G} # Max upload size for SQL files, configurable via .env
+      # Optional: PMA_ABSOLUTE_URI to set the full URI if behind a reverse proxy with a subpath
+      # PMA_ABSOLUTE_URI: https://yourdomain.com/pma/
+    networks:
+      - wordpress_prod_network
+
+volumes:
+  prod_db_data: {} # Persists database data for the production database service
+
+networks:
+  wordpress_prod_network:
+    driver: bridge # Defines the network for services to communicate

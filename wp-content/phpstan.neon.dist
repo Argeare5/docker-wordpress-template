@@ -1,0 +1,20 @@
+# phpstan.neon.dist
+
+includes:
+    - vendor/lipemat/phpstan-wordpress/extension.neon # Exact path may vary; check the package's documentation.
+    # - vendor/phpstan/phpstan-deprecation-rules/rules.neon  # lipemat/phpstan-wordpress might also recommend this for stricter checks.
+    # - vendor/phpstan/phpstan-strict-rules/rules.neon      # for even stricter checks.
+
+parameters:
+    level: 5 # Recommended starting level, or adjust to your preferred one.
+    paths:
+        # Adjust these paths to your actual custom theme and plugin directories
+        - themes/my-custom-theme/
+        - plugins/my-custom-plugin/
+        - mu-plugins/
+
+    # Other specific parameters for lipemat/phpstan-wordpress might be needed.
+    # Consult the package's documentation. For example, specifying wp-load.php
+    # if required for your project structure/environment:
+    # wordpress:
+    #     loader: public/wp-load.php # Example; path may differ depending on your project structure

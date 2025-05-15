@@ -1,0 +1,21 @@
+{
+  "name": "docker-wordpress-template",
+  "version": "1.0.0",
+  "description": "WordPress development template with Docker and BrowserSync",
+  "main": "index.js",
+  "scripts": {
+    "watch": "browser-sync start --config bs-config.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "wordpress",
+    "docker",
+    "browsersync"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browser-sync": "^3.0.0",
+    "dotenv": "^16.5.0"
+  }
+}
