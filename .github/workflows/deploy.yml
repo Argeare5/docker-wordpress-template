@@ -34,14 +34,14 @@ jobs:
           echo "PROD_WORDPRESS_TABLE_PREFIX=${{ secrets.PROD_WORDPRESS_TABLE_PREFIX }}" >> .env
           echo "PROD_WORDPRESS_DEBUG=${{ secrets.PROD_WORDPRESS_DEBUG }}" >> .env
           echo "PROD_WP_ENV=${{ secrets.PROD_WP_ENV }}" >> .env
-          echo "PROD_AUTH_KEY='${{ secrets.PROD_AUTH_KEY }}'" >> .env
-          echo "PROD_SECURE_AUTH_KEY='${{ secrets.PROD_SECURE_AUTH_KEY }}'" >> .env
-          echo "PROD_LOGGED_IN_KEY='${{ secrets.PROD_LOGGED_IN_KEY }}'" >> .env
-          echo "PROD_NONCE_KEY='${{ secrets.PROD_NONCE_KEY }}'" >> .env
-          echo "PROD_AUTH_SALT='${{ secrets.PROD_AUTH_SALT }}'" >> .env
-          echo "PROD_SECURE_AUTH_SALT='${{ secrets.PROD_SECURE_AUTH_SALT }}'" >> .env
-          echo "PROD_LOGGED_IN_SALT='${{ secrets.PROD_LOGGED_IN_SALT }}'" >> .env
-          echo "PROD_NONCE_SALT='${{ secrets.PROD_NONCE_SALT }}'" >> .env
+          echo "PROD_AUTH_KEY='${{ secrets.AUTH_KEY }}'" >> .env
+          echo "PROD_SECURE_AUTH_KEY='${{ secrets.SECURE_AUTH_KEY }}'" >> .env
+          echo "PROD_LOGGED_IN_KEY='${{ secrets.LOGGED_IN_KEY }}'" >> .env
+          echo "PROD_NONCE_KEY='${{ secrets.NONCE_KEY }}'" >> .env
+          echo "PROD_AUTH_SALT='${{ secrets.AUTH_SALT }}'" >> .env
+          echo "PROD_SECURE_AUTH_SALT='${{ secrets.SECURE_AUTH_SALT }}'" >> .env
+          echo "PROD_LOGGED_IN_SALT='${{ secrets.LOGGED_IN_SALT }}'" >> .env
+          echo "PROD_NONCE_SALT='${{ secrets.NONCE_SALT }}'" >> .env
           echo "PROD_PHPMYADMIN_PORT=${{ secrets.PROD_PHPMYADMIN_PORT }}" >> .env
           echo "PROD_PHPMYADMIN_UPLOAD_LIMIT=${{ secrets.PROD_PHPMYADMIN_UPLOAD_LIMIT }}" >> .env
           # Add any other variables needed in your server .env file
