@@ -33,14 +33,14 @@ jobs:
           VAR_PROD_WORDPRESS_TABLE_PREFIX: ${{ secrets.PROD_WORDPRESS_TABLE_PREFIX }}
           VAR_PROD_WORDPRESS_DEBUG: ${{ secrets.PROD_WORDPRESS_DEBUG }}
           VAR_PROD_WP_ENV: ${{ secrets.PROD_WP_ENV }}
-          VAR_PROD_AUTH_KEY: ${{ secrets.PROD_AUTH_KEY }}
-          VAR_PROD_SECURE_AUTH_KEY: ${{ secrets.PROD_SECURE_AUTH_KEY }}
-          VAR_PROD_LOGGED_IN_KEY: ${{ secrets.PROD_LOGGED_IN_KEY }}
-          VAR_PROD_NONCE_KEY: ${{ secrets.PROD_NONCE_KEY }}
+          VAR_PROD_AUTH_KEY: ${{ secrets.AUTH_KEY }}
+          VAR_PROD_SECURE_AUTH_KEY: ${{ secrets.SECURE_AUTH_KEY }}
+          VAR_PROD_LOGGED_IN_KEY: ${{ secrets.LOGGED_IN_KEY }}
+          VAR_PROD_NONCE_KEY: ${{ secrets.NONCE_KEY }}
           VAR_PROD_AUTH_SALT: ${{ secrets.PROD_AUTH_SALT }}
-          VAR_PROD_SECURE_AUTH_SALT: ${{ secrets.PROD_SECURE_AUTH_SALT }}
-          VAR_PROD_LOGGED_IN_SALT: ${{ secrets.PROD_LOGGED_IN_SALT }}
-          VAR_PROD_NONCE_SALT: ${{ secrets.PROD_NONCE_SALT }}
+          VAR_PROD_SECURE_AUTH_SALT: ${{ secrets.SECURE_AUTH_SALT }}
+          VAR_PROD_LOGGED_IN_SALT: ${{ secrets.LOGGED_IN_SALT }}
+          VAR_PROD_NONCE_SALT: ${{ secrets.NONCE_SALT }}
           VAR_PROD_PHPMYADMIN_PORT: ${{ secrets.PROD_PHPMYADMIN_PORT }}
           VAR_PROD_PHPMYADMIN_UPLOAD_LIMIT: ${{ secrets.PROD_PHPMYADMIN_UPLOAD_LIMIT }}
         run: |
