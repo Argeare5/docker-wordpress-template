@@ -93,6 +93,7 @@ wp-content/vendor/
 
 wp-content/plugins/*
 !wp-content/plugins/index.php
+!wp-content/plugins/social-sharing
 
 wp-content/themes/*
 !wp-content/themes/index.php
