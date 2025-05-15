@@ -1,6 +1,4 @@
-# docker-compose.yml
-
-version: '3.8' # Specifies the Docker Compose file format version
+version: '3.8'
 
 services:
   # MySQL Database Service

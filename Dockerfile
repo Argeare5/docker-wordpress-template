@@ -1,5 +1,3 @@
-# Dockerfile
-
 # Use an argument to specify the base WordPress image tag.
 # This allows you to easily change the PHP version or variant (e.g., apache, fpm)
 # by passing it as a build argument in docker-compose.yml.

@@ -93,11 +93,14 @@ wp-content/vendor/
 
 wp-content/plugins/*
 !wp-content/plugins/index.php
+!wp-content/plugins/akismet
+!wp-content/plugins/hello.php
 !wp-content/plugins/social-sharing
 !wp-content/plugins/solvera-user-dashboard
 
 wp-content/themes/*
 !wp-content/themes/index.php
+!wp-content/themes/twentytwentyfive
 
 # wp-content/mu-plugins/*
 # !wp-content/mu-plugins/my-custom-mu-plugin.php

@@ -1,4 +1,3 @@
-// bs-config.js
 // This file should be in the root of your project, next to docker-compose.yml
 
 // Load environment variables from .env file into process.env

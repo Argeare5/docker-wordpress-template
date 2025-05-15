@@ -1,8 +1,8 @@
 {
-  "name": "your-project-slug/wp-content",
+  "name": "docker-wordpress-template/wp-content",
   "description": "WordPress project content managed by Composer.",
   "type": "project",
-  "license": "proprietary",
+  "license": "MIT",
   "repositories": [
     {
       "type": "composer",
