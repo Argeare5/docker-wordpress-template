@@ -167,6 +167,8 @@ A brief overview of key files and directories in this template:
     - **`workflows/deploy.yml`**: Defines the CI/CD pipeline for deploying to the server.
 - **`config/`**: Contains configuration files for services.
     - **`php/uploads.ini`**: Custom PHP settings (e.g., for upload limits), used by the production WordPress container.
+- **`scripts/`**: Contains utility scripts.
+    - **`server_composer_commands.sh`**: Script executed on the server by the CI/CD pipeline to run Composer install commands inside the WordPress container for `wp-content` and any plugins/themes that have their own `composer.json`.
 - **`wp-content/`**: The standard WordPress content directory. This is where you'll do most of your WordPress-specific development.
     - **`themes/`**: Place your custom themes here (e.g., `my-custom-theme`).
     - **`plugins/`**: Place your custom plugins here, or plugins managed by Composer will be installed here.
@@ -178,11 +180,12 @@ A brief overview of key files and directories in this template:
 - **`.env.example`**: Template for local environment variables.
 - **`docker-compose.yml`**: Docker Compose configuration for the **local development environment**.
 - **`docker-compose.prod.yml`**: Docker Compose configuration for the **production/staging server** (this file is deployed by the CI/CD workflow).
-- **`Dockerfile`**: Defines the custom WordPress Docker image used locally, which includes Composer.
+- **`Dockerfile`**: Defines the custom WordPress Docker image used locally and on the server, which includes Composer.
 - **`bs-config.js`**: Configuration file for BrowserSync (for Live Reload).
 - **`package.json` / `package-lock.json`**: Manages Node.js dependencies for the project (e.g., BrowserSync, dotenv).
 - **`.gitignore`**: Specifies intentionally untracked files that Git should ignore.
 - **`README.md`**: This file – providing guidance on using the template.
+- **`LICENSE`**: Contains the MIT License text for the project.
 
 ## Environment Variables (`.env`)
 
