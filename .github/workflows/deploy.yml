@@ -96,7 +96,7 @@ jobs:
 
       # Step 4: Execute deployment commands on the server via SSH
       - name: Execute remote commands
-        uses: appleboy/ssh-action@v1.0.3 # Check for the latest version of this action
+        uses: appleboy/ssh-action@v1.0.3 # Or latest stable version
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }} # 'root'
@@ -105,24 +105,19 @@ jobs:
             echo "Navigating to project directory on server: ${{ secrets.SERVER_PROJECT_PATH }}"
             cd ${{ secrets.SERVER_PROJECT_PATH }}
 
-            echo "Current directory content (before .env move):"
-            ls -la
-
-            echo "Moving .env file to correct location if it was created by a previous step in root of checkout..."
-            # Assuming .env was created in the root of the checkout ($GITHUB_WORKSPACE) by the 'Create server .env file' step
-            # and rsync copied it to ${{ secrets.SERVER_PROJECT_PATH }}/.env
-            # If it was named .env_server and needs renaming:
-            # if [ -f .env_server ]; then
-            #   echo "Renaming .env_server to .env..."
-            #   mv -f .env_server .env
-            # fi
-            # Ensure .env exists now:
+            echo "Ensuring .env file is in place..."
             if [ ! -f .env ]; then
               echo "ERROR: Server .env file not found at ${{ secrets.SERVER_PROJECT_PATH }}/.env !"
-              exit 1
+              # Attempt to use .env_server if it exists from a previous rsync version
+              if [ -f .env_server ]; then
+                echo "Found .env_server, renaming to .env"
+                mv -f .env_server .env
+              else
+                exit 1 # Exit if no .env file can be established
+              fi
             fi
             echo "Server .env file content:"
-            cat .env
+            cat .env # For debugging, consider removing this in true production for security
 
             echo "Pulling latest versions of base images specified in docker-compose.prod.yml..."
             docker compose -f docker-compose.prod.yml pull
@@ -131,17 +126,45 @@ jobs:
             docker compose -f docker-compose.prod.yml up -d --force-recreate --remove-orphans
 
             echo "Waiting for WordPress container to be up..."
-            # You might need a short sleep or a more robust check if composer install fails immediately
-            sleep 10 
+            sleep 15
 
-            echo "Running composer install inside the WordPress container..."
-            # Ensure your wordpress_prod service has Composer installed (e.g., via your custom Dockerfile)
-            # The -T flag disables pseudo-tty allocation, which is good for non-interactive scripts.
-            docker compose -f docker-compose.prod.yml exec -T wordpress_prod composer install --no-interaction --no-progress --no-dev --optimize-autoloader --working-dir=/var/www/html/wp-content
+            WORDPRESS_CONTAINER_ID=$(docker compose -f docker-compose.prod.yml ps -q wordpress_prod)
+            if [ -z "$WORDPRESS_CONTAINER_ID" ]; then
+              echo "ERROR: WordPress container (wordpress_prod) not found or not running!"
+              # Attempt to get logs if container exists but is not running
+              docker compose -f docker-compose.prod.yml logs wordpress_prod
+              exit 1
+            fi
+            echo "WordPress container ID: $WORDPRESS_CONTAINER_ID"
+
+            echo "Running composer install for main wp-content..."
+            docker exec -T "$WORDPRESS_CONTAINER_ID" composer install --no-interaction --no-progress --no-dev --optimize-autoloader --working-dir=/var/www/html/wp-content
+
+            # --- Universal Composer Install for Plugins ---
+            echo "Searching for composer.json in plugins and running install..."
+            PLUGINS_BASE_DIR="/var/www/html/wp-content/plugins"
+            # Using docker exec to run find and the loop *inside* the container
+            # This ensures paths are correct from container's perspective and Composer runs in its environment
+            docker exec -T "$WORDPRESS_CONTAINER_ID" bash -c \
+            'find '"$PLUGINS_BASE_DIR"' -maxdepth 2 -name composer.json -print0 | while IFS= read -r -d "" composer_file; do \
+                plugin_dir=$(dirname "$composer_file"); \
+                echo "Found composer.json in $plugin_dir. Running composer install..."; \
+                composer install --no-interaction --no-progress --no-dev --optimize-autoloader --working-dir="$plugin_dir"; \
+            done'
+            
+            # --- Universal Composer Install for Themes ---
+            echo "Searching for composer.json in themes and running install..."
+            THEMES_BASE_DIR="/var/www/html/wp-content/themes"
+            docker exec -T "$WORDPRESS_CONTAINER_ID" bash -c \
+            'find '"$THEMES_BASE_DIR"' -maxdepth 2 -name composer.json -print0 | while IFS= read -r -d "" composer_file; do \
+                theme_dir=$(dirname "$composer_file"); \
+                echo "Found composer.json in $theme_dir. Running composer install..."; \
+                composer install --no-interaction --no-progress --no-dev --optimize-autoloader --working-dir="$theme_dir"; \
+            done'
 
             echo "Optional: Running WordPress specific commands (e.g., clear cache, DB updates if needed via wp-cli)"
-            # docker compose -f docker-compose.prod.yml exec -T wordpress_prod wp theme activate your_theme_slug --allow-root
-            # docker compose -f docker-compose.prod.yml exec -T wordpress_prod wp cache flush --allow-root
-            # docker compose -f docker-compose.prod.yml exec -T wordpress_prod wp core update-db --allow-root
+            # docker exec -T "$WORDPRESS_CONTAINER_ID" wp theme activate your_theme_slug --allow-root
+            # docker exec -T "$WORDPRESS_CONTAINER_ID" wp cache flush --allow-root
+            # docker exec -T "$WORDPRESS_CONTAINER_ID" wp core update-db --allow-root
 
             echo "Deployment finished successfully!"
