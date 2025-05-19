@@ -107,32 +107,28 @@ jobs:
 
             echo "Ensuring .env file is in place..."
             if [ ! -f .env ]; then
-              echo "ERROR: Server .env file not found at ${{ secrets.SERVER_PROJECT_PATH }}/.env !"
-              # Attempt to use .env_server if it exists from a previous rsync version
               if [ -f .env_server ]; then
                 echo "Found .env_server, renaming to .env"
                 mv -f .env_server .env
               else
-                exit 1 # Exit if no .env file can be established
+                echo "ERROR: Server .env file not found!"
+                exit 1
               fi
             fi
-            echo "Server .env file content:"
-            cat .env # For debugging, consider removing this in true production for security
-
-            echo "Pulling latest versions of base images specified in docker-compose.prod.yml..."
+            
+            echo "Pulling latest versions of base images..."
             docker compose -f docker-compose.prod.yml pull
 
-            echo "Bringing up Docker containers using docker-compose.prod.yml..."
+            echo "Bringing up Docker containers..."
             docker compose -f docker-compose.prod.yml up -d --force-recreate --remove-orphans
 
-            echo "Waiting for WordPress container to be up..."
-            sleep 15
+            echo "Waiting for WordPress container to be ready..."
+            sleep 15 # Give container time to start services
 
             WORDPRESS_CONTAINER_ID=$(docker compose -f docker-compose.prod.yml ps -q wordpress_prod)
             if [ -z "$WORDPRESS_CONTAINER_ID" ]; then
               echo "ERROR: WordPress container (wordpress_prod) not found or not running!"
-              # Attempt to get logs if container exists but is not running
-              docker compose -f docker-compose.prod.yml logs wordpress_prod
+              docker compose -f docker-compose.prod.yml logs wordpress_prod # Show logs if it failed
               exit 1
             fi
             echo "WordPress container ID: $WORDPRESS_CONTAINER_ID"
@@ -142,29 +138,59 @@ jobs:
 
             # --- Universal Composer Install for Plugins ---
             echo "Searching for composer.json in plugins and running install..."
-            PLUGINS_BASE_DIR="/var/www/html/wp-content/plugins"
-            # Using docker exec to run find and the loop *inside* the container
-            # This ensures paths are correct from container's perspective and Composer runs in its environment
-            docker exec -T "$WORDPRESS_CONTAINER_ID" bash -c \
-            'find '"$PLUGINS_BASE_DIR"' -maxdepth 2 -name composer.json -print0 | while IFS= read -r -d "" composer_file; do \
-                plugin_dir=$(dirname "$composer_file"); \
-                echo "Found composer.json in $plugin_dir. Running composer install..."; \
-                composer install --no-interaction --no-progress --no-dev --optimize-autoloader --working-dir="$plugin_dir"; \
-            done'
+            PLUGINS_BASE_DIR_ON_HOST="${{ secrets.SERVER_PROJECT_PATH }}/wp-content/plugins"
+            PLUGINS_BASE_DIR_IN_CONTAINER="/var/www/html/wp-content/plugins"
+
+            # Find plugin directories that contain a composer.json directly under PLUGINS_BASE_DIR_ON_HOST
+            # This command is run on the GITHUB RUNNER, not on the remote server yet for the find part
+            # No, this needs to run on the server to find the dirs, then loop.
+
+            # Let's execute the find and loop on the remote server directly
+            # This script will be executed on the remote server by appleboy/ssh-action
+            # It finds plugin directories with composer.json and runs composer install in them via docker exec
+
+            # Find all composer.json files in the first level of plugin directories
+            # and then iterate through them to run composer install.
+            # Using a loop executed on the remote server.
+            echo "Looking for plugin composer.json files in $PLUGINS_BASE_DIR_ON_HOST on the server..."
+            for composer_file_path in $(find $PLUGINS_BASE_DIR_ON_HOST -maxdepth 2 -name composer.json); do
+              plugin_dir_on_host=$(dirname "$composer_file_path")
+              # Construct the corresponding path inside the container
+              # We need the relative path from SERVER_PROJECT_PATH to get the path inside the container volume mount
+              # Assuming SERVER_PROJECT_PATH is the root for docker-compose.prod.yml and wp-content is at ./wp-content
+              # So, plugin_dir_in_container will be like /var/www/html/wp-content/plugins/my-plugin
+              plugin_subdir=$(basename "$plugin_dir_on_host")
+              plugin_dir_in_container="$PLUGINS_BASE_DIR_IN_CONTAINER/$plugin_subdir"
             
+              echo "Found composer.json in plugin directory (host: $plugin_dir_on_host, container: $plugin_dir_in_container)"
+              echo "Running composer install for $plugin_dir_in_container..."
+              docker exec -T "$WORDPRESS_CONTAINER_ID" composer install \
+                --no-interaction \
+                --no-progress \
+                --no-dev \
+                --optimize-autoloader \
+                --working-dir="$plugin_dir_in_container"
+            done
+
             # --- Universal Composer Install for Themes ---
             echo "Searching for composer.json in themes and running install..."
-            THEMES_BASE_DIR="/var/www/html/wp-content/themes"
-            docker exec -T "$WORDPRESS_CONTAINER_ID" bash -c \
-            'find '"$THEMES_BASE_DIR"' -maxdepth 2 -name composer.json -print0 | while IFS= read -r -d "" composer_file; do \
-                theme_dir=$(dirname "$composer_file"); \
-                echo "Found composer.json in $theme_dir. Running composer install..."; \
-                composer install --no-interaction --no-progress --no-dev --optimize-autoloader --working-dir="$theme_dir"; \
-            done'
+            THEMES_BASE_DIR_ON_HOST="${{ secrets.SERVER_PROJECT_PATH }}/wp-content/themes"
+            THEMES_BASE_DIR_IN_CONTAINER="/var/www/html/wp-content/themes"
 
-            echo "Optional: Running WordPress specific commands (e.g., clear cache, DB updates if needed via wp-cli)"
-            # docker exec -T "$WORDPRESS_CONTAINER_ID" wp theme activate your_theme_slug --allow-root
-            # docker exec -T "$WORDPRESS_CONTAINER_ID" wp cache flush --allow-root
-            # docker exec -T "$WORDPRESS_CONTAINER_ID" wp core update-db --allow-root
+            echo "Looking for theme composer.json files in $THEMES_BASE_DIR_ON_HOST on the server..."
+            for composer_file_path in $(find $THEMES_BASE_DIR_ON_HOST -maxdepth 2 -name composer.json); do
+              theme_dir_on_host=$(dirname "$composer_file_path")
+              theme_subdir=$(basename "$theme_dir_on_host")
+              theme_dir_in_container="$THEMES_BASE_DIR_IN_CONTAINER/$theme_subdir"
 
+              echo "Found composer.json in theme directory (host: $theme_dir_on_host, container: $theme_dir_in_container)"
+              echo "Running composer install for $theme_dir_in_container..."
+              docker exec -T "$WORDPRESS_CONTAINER_ID" composer install \
+                --no-interaction \
+                --no-progress \
+                --no-dev \
+                --optimize-autoloader \
+                --working-dir="$theme_dir_in_container"
+            done
+            
             echo "Deployment finished successfully!"
