@@ -56,6 +56,8 @@ services:
       WORDPRESS_TABLE_PREFIX: ${PROD_WORDPRESS_TABLE_PREFIX:-wp_} # Defaults to 'wp_' if not set in .env
       WORDPRESS_DEBUG: ${PROD_WORDPRESS_DEBUG:-0} # Defaults to 0 (off) for production
       WP_ENVIRONMENT_TYPE: ${PROD_WP_ENV:-production} # Sets WordPress environment type (e.g., production, staging)
+      WORDPRESS_CONFIG_EXTRA: |
+        ${PROD_WORDPRESS_FS_METHOD_DIRECT}
 
       # WordPress Salts, sourced from server .env (populated from GitHub Secrets)
       # Names in .env are PROD_AUTH_KEY etc. as written by CI/CD

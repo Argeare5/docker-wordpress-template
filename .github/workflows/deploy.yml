@@ -35,6 +35,7 @@ jobs:
           VAR_PROD_WORDPRESS_TABLE_PREFIX: ${{ secrets.PROD_WORDPRESS_TABLE_PREFIX }}
           VAR_PROD_WORDPRESS_DEBUG: ${{ secrets.PROD_WORDPRESS_DEBUG }}
           VAR_PROD_WP_ENV: ${{ secrets.PROD_WP_ENV }}
+          VAR_PROD_WORDPRESS_FS_METHOD_DIRECT: ${{ secrets.PROD_WORDPRESS_FS_METHOD_DIRECT }}
           # WordPress Salt secrets (GitHub secrets are named WITHOUT PROD_ prefix)
           VAR_AUTH_KEY: ${{ secrets.AUTH_KEY }}
           VAR_SECURE_AUTH_KEY: ${{ secrets.SECURE_AUTH_KEY }}
@@ -61,6 +62,7 @@ jobs:
             printf "PROD_WORDPRESS_TABLE_PREFIX='%s'\n" "$VAR_PROD_WORDPRESS_TABLE_PREFIX"
             printf "PROD_WORDPRESS_DEBUG='%s'\n" "$VAR_PROD_WORDPRESS_DEBUG"
             printf "PROD_WP_ENV='%s'\n" "$VAR_PROD_WP_ENV"
+            printf "PROD_WORDPRESS_FS_METHOD_DIRECT=\"%s\"\n" "$VAR_PROD_WORDPRESS_FS_METHOD_DIRECT"
             # Writing to .env file WITH PROD_ prefix for consistency with other PROD_ variables,
             # but reading from GitHub Secrets named WITHOUT PROD_ prefix for salts.
             printf "PROD_AUTH_KEY='%s'\n" "$VAR_AUTH_KEY"
@@ -84,10 +86,10 @@ jobs:
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: "-rlgoDzvci --delete --exclude='.git*'" # rsync arguments. Added 'c' for checksum.
-            # Removed 'p' (perms) as it can cause issues if user mismatch, 'o' and 'g' are often fine with root.
+          # Removed 'p' (perms) as it can cause issues if user mismatch, 'o' and 'g' are often fine with root.
           # Consider if --delete is appropriate for all scenarios (e.g., uploads folder).
           SOURCE: "./"  # Source directory (root of your repository checkout in GITHUB_WORKSPACE)
-            # This will copy all files including the generated .env, wp-content/,
+          # This will copy all files including the generated .env, wp-content/,
           # docker-compose.prod.yml, scripts/, and config/ directories.
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_USER: ${{ secrets.SSH_USER }} # Should be 'root' in your case
@@ -131,6 +133,13 @@ jobs:
               exit 1
             fi
             echo "INFO: WordPress container ID for script execution: $WORDPRESS_CONTAINER_ID"
+
+            echo "INFO: Setting ownership of wp-content inside the WordPress container to www-data..."
+            docker exec "$WORDPRESS_CONTAINER_ID" chown -R www-data:www-data /var/www/html/wp-content
+            
+            echo "INFO: Setting permissions for wp-content inside the WordPress container..."
+            docker exec "$WORDPRESS_CONTAINER_ID" find /var/www/html/wp-content -type d -exec chmod 755 {} \;
+            docker exec "$WORDPRESS_CONTAINER_ID" find /var/www/html/wp-content -type f -exec chmod 644 {} \;
 
             # Define the path to the script that rsync copied to the server
             COMPOSER_SCRIPT_ON_SERVER_HOST="${{ secrets.SERVER_PROJECT_PATH }}/scripts/server_composer_commands.sh"

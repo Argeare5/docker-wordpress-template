@@ -333,6 +333,7 @@ Navigate to your GitHub repository settings: `Settings` -> `Secrets and variable
     - `PROD_WORDPRESS_TABLE_PREFIX` (e.g., `wp_`; optional if default `wp_` is fine)
     - `PROD_WORDPRESS_DEBUG` (should be `0` for production)
     - `PROD_WP_ENV` (e.g., `production` or `staging`)
+    - `PROD_WORDPRESS_FS_METHOD_DIRECT` (e.g., `define( 'FS_METHOD', 'direct' );`)
 
 - **WordPress Salts/Keys Secrets (these GitHub Secrets are named *without* a `PROD_` prefix):**
     - *Description*: Unique WordPress security keys and salts. Generate these from [https://api.wordpress.org/secret-key/1.1/salt/](https://api.wordpress.org/secret-key/1.1/salt/). Copy **only the value part** (what's between the single quotes in the `define()` statement from the generator) into each corresponding GitHub Secret.
