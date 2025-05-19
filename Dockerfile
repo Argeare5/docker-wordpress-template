@@ -1,17 +1,20 @@
+# Dockerfile
+# Defines the custom WordPress image for local development and can be used for production.
+
 # Use an argument to specify the base WordPress image tag.
 # This allows you to easily change the PHP version or variant (e.g., apache, fpm)
-# by passing it as a build argument in docker-compose.yml.
-ARG WORDPRESS_IMAGE_TAG=latest
+# by passing it as a build argument in docker-compose.yml or docker-compose.prod.yml.
+ARG WORDPRESS_IMAGE_TAG=latest # Default: latest official WordPress image (e.g., php8.2-apache)
 
 # Start from the official WordPress image with the specified tag
 FROM wordpress:${WORDPRESS_IMAGE_TAG}
 
-# Switch to root user to install packages
+# Switch to root user to install packages and copy files
 USER root
 
 # Update package lists and install system dependencies:
-# - git: Required by Composer for cloning VCS repositories or determining versions.
-# - unzip: Required by Composer for extracting .zip archives if PHP's built-in zip extension is insufficient or for specific formats.
+# - git: Often required by Composer for cloning VCS repositories or determining versions.
+# - unzip: May be required by Composer for extracting certain .zip archives.
 # --no-install-recommends: Avoids installing unnecessary recommended packages.
 # Clean up apt cache afterwards to keep image size smaller.
 RUN apt-get update && apt-get install -y \
@@ -21,17 +24,13 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/*
 
 # Copy Composer binary from the official Composer image (multi-stage build).
-# This is a clean way to get Composer without running its installer script.
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Using a specific stable version tag for composer image (e.g., '2' for latest v2, or '2.8.8' if specific)
+# is recommended for reproducibility over 'latest'.
+# 'composer:2' will usually give the latest stable v2 release.
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Ensure composer is executable
+RUN chmod +x /usr/bin/composer
 
-# Optional: You can set the working directory if you want,
-# but the base WordPress image usually sets it to /var/www/html.
-# WORKDIR /var/www/html
-
-# Revert to the default wordpress user if needed (the base image often runs as 'www-data' or similar for web server processes)
-# The user for php-cli (and thus composer) might be root when you exec in,
-# but web server processes will run as the less privileged user defined in the base image.
-# This line might not be necessary depending on the base image and your needs.
-# USER www-data
-
-# The CMD is inherited from the base 'wordpress' image (e.g., "apache2-foreground")
+# The CMD and ENTRYPOINT are inherited from the base 'wordpress' image.
+# We are not overriding them here to keep the local development simple,
+# and server-side composer installs will be handled by a script executed via CI/CD.

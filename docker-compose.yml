@@ -1,74 +1,96 @@
+# docker-compose.yml
+# Defines services for the LOCAL DEVELOPMENT environment.
+
+# The 'version' attribute is obsolete with Docker Compose V2+ but harmless.
+# You can remove it if you prefer.
 version: '3.8'
 
 services:
-  # MySQL Database Service
+  # MySQL Database Service for local development
   db:
-    image: mysql:8.0 # Use a specific version of MySQL, e.g., 8.0 or 5.7 for stability
-    container_name: ${PROJECT_NAME}_db # Dynamic container name using .env variable
-    command: '--default-authentication-plugin=mysql_native_password' # Ensures compatibility with older clients/WordPress
+    image: mysql:8.0 # Using MySQL 8.0. Can be changed to other versions e.g., 5.7.
+    container_name: ${PROJECT_NAME}_db # Dynamic container name from local .env
+    # Command to ensure MySQL 8 uses native password authentication for broader compatibility
+    # May not be strictly necessary for all WordPress versions or PHP MySQL clients.
+    command: '--default-authentication-plugin=mysql_native_password'
     volumes:
       - db_data:/var/lib/mysql # Named volume for persistent database storage
     ports:
-      - "${MYSQL_HOST_PORT:-3306}:3306" # Expose MySQL port to host (optional, for external DB tools)
-    restart: always # Restart policy
+      # Expose MySQL port to the host machine (optional, for external DB tools like TablePlus, DBeaver)
+      # Uses MYSQL_HOST_PORT from .env, defaults to 3306 if not set.
+      - "${MYSQL_HOST_PORT:-3306}:3306"
+    restart: always # Ensures the DB container restarts automatically if it stops
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # Root password for MySQL
-      MYSQL_DATABASE: ${MYSQL_DATABASE}           # Database name for WordPress
-      MYSQL_USER: ${MYSQL_USER}                   # Username for WordPress database access
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}           # Password for WordPress database user
+      # MySQL credentials and database name, sourced from the local .env file
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     networks:
-      - wordpress_network # Connect to the custom network
+      - wordpress_network # Connects to the custom Docker network
 
-  # WordPress Service - Modified to use a Dockerfile
+  # WordPress Service for local development
   wordpress:
     build:
-      context: . # Specifies that Docker should look for the Dockerfile in the current directory (project root)
+      context: . # Specifies that Docker should build an image from the Dockerfile in the current directory (project root)
       args:
-        WORDPRESS_IMAGE_TAG: latest # Argument passed to Dockerfile, can be e.g., php8.1-apache, php8.2-apache
-    container_name: ${PROJECT_NAME}_wordpress # Dynamic container name
+        WORDPRESS_IMAGE_TAG: latest # Base WordPress image tag passed to Dockerfile (e.g., latest, php8.2-apache)
+    container_name: ${PROJECT_NAME}_wordpress # Dynamic container name from local .env
     depends_on:
       - db # Ensures 'db' service starts before 'wordpress'
     ports:
-      - "${WORDPRESS_HOST_PORT:-8000}:80" # Map host port (default 8000) to container port 80
+      # Maps host port (from WORDPRESS_HOST_PORT in .env, default 8000) to container's port 80
+      - "${WORDPRESS_HOST_PORT:-8000}:80"
     restart: always
     volumes:
-      - ./wp-content:/var/www/html/wp-content # Mount local wp-content directory into the container
-      # - ./config/php/php.ini:/usr/local/etc/php/conf.d/custom.ini # Optional: Mount custom php.ini for PHP settings
+      # Mounts the local ./wp-content directory into the container.
+      # This allows live editing of themes and plugins from the host machine.
+      - ./wp-content:/var/www/html/wp-content
+      # Optional: Mount a custom php.ini for PHP settings if needed for local dev.
+      # Example: - ./config/php/local-php-dev.ini:/usr/local/etc/php/conf.d/zz-local-dev.ini
     environment:
-      WORDPRESS_DB_HOST: db:3306             # WordPress database host (service name 'db' and port)
-      WORDPRESS_DB_USER: ${MYSQL_USER}       # WordPress database username (from .env)
-      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD} # WordPress database password (from .env)
-      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}   # WordPress database name (from .env)
-      WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX:-wp_} # Table prefix (from .env, default 'wp_')
-      # WP_HOME & WP_SITEURL are useful for local development to ensure correct URL generation
+      # WordPress database connection details, sourced from local .env
+      WORDPRESS_DB_HOST: db:3306 # 'db' is the service name of the MySQL container, 3306 is MySQL's port
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX:-wp_} # Defaults to 'wp_' if not set in .env
+      # WordPress debug settings, sourced from local .env
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG:-1} # Defaults to 1 (true) for local development
+      # Optional: Set WP_DEBUG_LOG and WP_DEBUG_DISPLAY if your WordPress image/setup uses them
+      # These are standard WordPress constants for debugging.
+      # WORDPRESS_DEBUG_LOG: ${WORDPRESS_DEBUG_LOG:-true} # Log errors to wp-content/debug.log
+      # WORDPRESS_DEBUG_DISPLAY: ${WORDPRESS_DEBUG_DISPLAY:-true} # Display errors on screen
+      # WP_SITEURL and WP_HOME are set to ensure WordPress uses the correct URL for local development,
+      # especially when accessed via the BrowserSync port.
       WP_HOME: http://localhost:${WORDPRESS_HOST_PORT:-8000}
       WP_SITEURL: http://localhost:${WORDPRESS_HOST_PORT:-8000}
-      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG:-1} # Enable WordPress debug mode (from .env, default 1/true)
     networks:
-      - wordpress_network # Connect to the custom network
+      - wordpress_network # Connects to the custom Docker network
 
-  # phpMyAdmin Service
+  # phpMyAdmin Service for local database management
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest # Use the latest official phpMyAdmin image
-    container_name: ${PROJECT_NAME}_phpmyadmin # Dynamic container name
+    image: phpmyadmin/phpmyadmin:latest # Uses the official phpMyAdmin image
+    container_name: ${PROJECT_NAME}_phpmyadmin # Dynamic container name from local .env
     depends_on:
-      - db # Ensures 'db' service is available
+      - db # Ensures 'db' service is available before phpMyAdmin starts
     ports:
-      - "${PHPMYADMIN_HOST_PORT:-8081}:80" # Map host port (default 8081) to container port 80
+      # Maps host port (from PHPMYADMIN_HOST_PORT in .env, default 8081) to container's port 80
+      - "${PHPMYADMIN_HOST_PORT:-8081}:80"
     restart: always
     environment:
-      PMA_HOST: db # MySQL host (service name 'db')
+      PMA_HOST: db # Tells phpMyAdmin to connect to the 'db' service (MySQL container)
       PMA_PORT: 3306 # MySQL port
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # Allows login to phpMyAdmin with MySQL root user (from .env)
-      UPLOAD_LIMIT: 1G # Optional: Increase file upload limit for database dumps, etc.
+      UPLOAD_LIMIT: 1G # Optional: Sets the maximum upload size for phpMyAdmin (e.g., for importing large SQL dumps)
     networks:
-      - wordpress_network # Connect to the custom network
+      - wordpress_network # Connects to the custom Docker network
 
-# Named volumes for data persistence
+# Named volumes for persistent data storage
 volumes:
-  db_data: {} # Defines the 'db_data' volume for MySQL
+  db_data: {} # Defines the named volume 'db_data' for MySQL. Data persists even if container is removed.
 
-# Custom network for inter-service communication
+# Custom Docker network for inter-service communication
 networks:
   wordpress_network:
-    driver: bridge # Use the bridge driver for the network
+    driver: bridge # Uses the bridge driver, allowing containers to communicate by service name.

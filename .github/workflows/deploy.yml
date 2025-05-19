@@ -1,16 +1,19 @@
-name: Deploy to Server
+# .github/workflows/deploy.yml
+# GitHub Actions workflow for deploying the WordPress application to the server.
+
+name: Deploy WordPress to Server
 
 # Controls when the action will run.
 # Triggers the workflow on push events to the 'main' branch.
 on:
   push:
     branches:
-      - main # Adjust this to your production/deployment branch if different (e.g., master, production)
+      - main # Adjust this to your production/deployment branch (e.g., master, production)
 
 jobs:
   deploy:
     name: Deploy to Server
-    runs-on: ubuntu-latest # Specifies the runner environment
+    runs-on: ubuntu-latest # Specifies the runner environment for the job
 
     steps:
       # Step 1: Checkout the repository code
@@ -19,9 +22,10 @@ jobs:
         uses: actions/checkout@v4 # Using version 4, check for latest stable version
 
       # Step 2: Create .env file for server from GitHub Secrets
+      # This step generates the .env file that will be deployed to the server.
       - name: Create server .env file
-        # Pass all secrets as environment variables to this step for safer handling
         env:
+          # Pass all necessary secrets as environment variables to this step for safer handling
           VAR_PROD_PROJECT_NAME: ${{ secrets.PROD_PROJECT_NAME }}
           VAR_PROD_MYSQL_ROOT_PASSWORD: ${{ secrets.PROD_MYSQL_ROOT_PASSWORD }}
           VAR_PROD_MYSQL_DATABASE: ${{ secrets.PROD_MYSQL_DATABASE }}
@@ -31,19 +35,22 @@ jobs:
           VAR_PROD_WORDPRESS_TABLE_PREFIX: ${{ secrets.PROD_WORDPRESS_TABLE_PREFIX }}
           VAR_PROD_WORDPRESS_DEBUG: ${{ secrets.PROD_WORDPRESS_DEBUG }}
           VAR_PROD_WP_ENV: ${{ secrets.PROD_WP_ENV }}
-          VAR_PROD_AUTH_KEY: ${{ secrets.AUTH_KEY }}
-          VAR_PROD_SECURE_AUTH_KEY: ${{ secrets.SECURE_AUTH_KEY }}
-          VAR_PROD_LOGGED_IN_KEY: ${{ secrets.LOGGED_IN_KEY }}
-          VAR_PROD_NONCE_KEY: ${{ secrets.NONCE_KEY }}
-          VAR_PROD_AUTH_SALT: ${{ secrets.AUTH_SALT }}
-          VAR_PROD_SECURE_AUTH_SALT: ${{ secrets.SECURE_AUTH_SALT }}
-          VAR_PROD_LOGGED_IN_SALT: ${{ secrets.LOGGED_IN_SALT }}
-          VAR_PROD_NONCE_SALT: ${{ secrets.NONCE_SALT }}
+          # WordPress Salt secrets (GitHub secrets are named WITHOUT PROD_ prefix)
+          VAR_AUTH_KEY: ${{ secrets.AUTH_KEY }}
+          VAR_SECURE_AUTH_KEY: ${{ secrets.SECURE_AUTH_KEY }}
+          VAR_LOGGED_IN_KEY: ${{ secrets.LOGGED_IN_KEY }}
+          VAR_NONCE_KEY: ${{ secrets.NONCE_KEY }}
+          VAR_AUTH_SALT: ${{ secrets.AUTH_SALT }}
+          VAR_SECURE_AUTH_SALT: ${{ secrets.SECURE_AUTH_SALT }}
+          VAR_LOGGED_IN_SALT: ${{ secrets.LOGGED_IN_SALT }}
+          VAR_NONCE_SALT: ${{ secrets.NONCE_SALT }}
+          # phpMyAdmin secrets (if used)
           VAR_PROD_PHPMYADMIN_PORT: ${{ secrets.PROD_PHPMYADMIN_PORT }}
           VAR_PROD_PHPMYADMIN_UPLOAD_LIMIT: ${{ secrets.PROD_PHPMYADMIN_UPLOAD_LIMIT }}
         run: |
-          echo "Creating .env file for server..."
+          echo "INFO: Creating .env file for server..."
           # Using a block to redirect all printf output to .env file
+          # This .env file is created in the root of the checkout on the Actions runner
           {
             printf "PROD_PROJECT_NAME='%s'\n" "$VAR_PROD_PROJECT_NAME"
             printf "PROD_MYSQL_ROOT_PASSWORD='%s'\n" "$VAR_PROD_MYSQL_ROOT_PASSWORD"
@@ -54,47 +61,40 @@ jobs:
             printf "PROD_WORDPRESS_TABLE_PREFIX='%s'\n" "$VAR_PROD_WORDPRESS_TABLE_PREFIX"
             printf "PROD_WORDPRESS_DEBUG='%s'\n" "$VAR_PROD_WORDPRESS_DEBUG"
             printf "PROD_WP_ENV='%s'\n" "$VAR_PROD_WP_ENV"
-            printf "PROD_AUTH_KEY='%s'\n" "$VAR_PROD_AUTH_KEY"
-            printf "PROD_SECURE_AUTH_KEY='%s'\n" "$VAR_PROD_SECURE_AUTH_KEY"
-            printf "PROD_LOGGED_IN_KEY='%s'\n" "$VAR_PROD_LOGGED_IN_KEY"
-            printf "PROD_NONCE_KEY='%s'\n" "$VAR_PROD_NONCE_KEY"
-            printf "PROD_AUTH_SALT='%s'\n" "$VAR_PROD_AUTH_SALT"
-            printf "PROD_SECURE_AUTH_SALT='%s'\n" "$VAR_PROD_SECURE_AUTH_SALT"
-            printf "PROD_LOGGED_IN_SALT='%s'\n" "$VAR_PROD_LOGGED_IN_SALT"
-            printf "PROD_NONCE_SALT='%s'\n" "$VAR_PROD_NONCE_SALT"
+            # Writing to .env file WITH PROD_ prefix for consistency with other PROD_ variables,
+            # but reading from GitHub Secrets named WITHOUT PROD_ prefix for salts.
+            printf "PROD_AUTH_KEY='%s'\n" "$VAR_AUTH_KEY"
+            printf "PROD_SECURE_AUTH_KEY='%s'\n" "$VAR_SECURE_AUTH_KEY"
+            printf "PROD_LOGGED_IN_KEY='%s'\n" "$VAR_LOGGED_IN_KEY"
+            printf "PROD_NONCE_KEY='%s'\n" "$VAR_NONCE_KEY"
+            printf "PROD_AUTH_SALT='%s'\n" "$VAR_AUTH_SALT"
+            printf "PROD_SECURE_AUTH_SALT='%s'\n" "$VAR_SECURE_AUTH_SALT"
+            printf "PROD_LOGGED_IN_SALT='%s'\n" "$VAR_LOGGED_IN_SALT"
+            printf "PROD_NONCE_SALT='%s'\n" "$VAR_NONCE_SALT"
             printf "PROD_PHPMYADMIN_PORT='%s'\n" "$VAR_PROD_PHPMYADMIN_PORT"
             printf "PROD_PHPMYADMIN_UPLOAD_LIMIT='%s'\n" "$VAR_PROD_PHPMYADMIN_UPLOAD_LIMIT"
-          } > .env
-          echo "Finished creating .env file. Content:"
-          cat .env
-        # This .env file is created in the root of the checkout in the Actions runner
+          } > .env # This creates .env in the current GITHUB_WORKSPACE root
+          echo "INFO: Finished creating .env file in GITHUB_WORKSPACE. Content:"
+          cat .env # For debugging, consider removing this for production secrets
 
       # Step 3: Deploy files to DigitalOcean Droplet using rsync over SSH
-      # This action securely copies files from the runner to your server.
+      # This action securely copies files from the runner's GITHUB_WORKSPACE to your server.
       - name: Deploy files using rsync
-        uses: easingthemes/ssh-deploy@v5.0.0 # Check for the latest version of this action
+        uses: easingthemes/ssh-deploy@v5.0.0 # Check for the latest stable version
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-rlgoDzvc -i --delete --exclude='.git*'" # rsync arguments
-            # -r: recursive
-            # -l: copy symlinks as symlinks
-            # -g: preserve group
-            # -o: preserve owner (useful if deploying as root)
-            # -D: preserve devices and special files
-            # -z: compress file data during the transfer
-            # -v: verbose
-            # -c: skip based on checksum, not mod-time & size
-            # -i: output a change-summary for all updates
-            # --delete: delete extraneous files from dest dirs
-          # --exclude='.git*': exclude .git directory and related files
-          SOURCE: "./"  # Source directory (root of your repository checkout)
-            # This will copy all files including the generated .env, wp-content,
-          # docker-compose.prod.yml, and config/ directory.
+          ARGS: "-rlgoDzvci --delete --exclude='.git*'" # rsync arguments. Added 'c' for checksum.
+            # Removed 'p' (perms) as it can cause issues if user mismatch, 'o' and 'g' are often fine with root.
+          # Consider if --delete is appropriate for all scenarios (e.g., uploads folder).
+          SOURCE: "./"  # Source directory (root of your repository checkout in GITHUB_WORKSPACE)
+            # This will copy all files including the generated .env, wp-content/,
+          # docker-compose.prod.yml, scripts/, and config/ directories.
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_USER: ${{ secrets.SSH_USER }} # Should be 'root' in your case
           TARGET: ${{ secrets.SERVER_PROJECT_PATH }} # Your server path: /home/wordpress-template/
 
       # Step 4: Execute deployment commands on the server via SSH
+      # This action runs commands on your remote server after files are deployed.
       - name: Execute remote commands
         uses: appleboy/ssh-action@v1.0.3 # Or latest stable version
         with:
@@ -102,28 +102,27 @@ jobs:
           username: ${{ secrets.SSH_USER }} # 'root'
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "Navigating to project directory on server: ${{ secrets.SERVER_PROJECT_PATH }}"
+            set -e # Exit immediately if a command exits with a non-zero status.
+            
+            echo "INFO: Navigating to project directory on server: ${{ secrets.SERVER_PROJECT_PATH }}"
             cd ${{ secrets.SERVER_PROJECT_PATH }}
 
-            echo "Ensuring .env file is in place..."
+            echo "INFO: Ensuring .env file is in place (was copied by rsync)..."
             if [ ! -f .env ]; then
-              if [ -f .env_server ]; then
-                echo "Found .env_server, renaming to .env"
-                mv -f .env_server .env
-              else
-                echo "ERROR: Server .env file not found!"
-                exit 1
-              fi
+              echo "ERROR: Server .env file not found at ${{ secrets.SERVER_PROJECT_PATH }}/.env after rsync!"
+              exit 1
             fi
             
-            echo "Pulling latest versions of base images..."
+            echo "INFO: Pulling latest versions of base images specified in docker-compose.prod.yml..."
             docker compose -f docker-compose.prod.yml pull
 
-            echo "Bringing up Docker containers..."
-            docker compose -f docker-compose.prod.yml up -d --force-recreate --remove-orphans
+            echo "INFO: Bringing up Docker containers using docker-compose.prod.yml..."
+            # The --build flag is crucial here if your docker-compose.prod.yml's wordpress_prod service uses 'build: .'
+            # This ensures the image is rebuilt on the server if Dockerfile or its context (scripts/) changed.
+            docker compose -f docker-compose.prod.yml up -d --build --force-recreate --remove-orphans --always-recreate-deps
 
-            echo "Waiting for WordPress container to be ready..."
-            sleep 15 # Give container time to start services
+            echo "INFO: Waiting for WordPress container to be fully ready..."
+            sleep 20 # Increased wait time for services to settle
 
             WORDPRESS_CONTAINER_ID=$(docker compose -f docker-compose.prod.yml ps -q wordpress_prod)
             if [ -z "$WORDPRESS_CONTAINER_ID" ]; then
@@ -131,66 +130,25 @@ jobs:
               docker compose -f docker-compose.prod.yml logs wordpress_prod # Show logs if it failed
               exit 1
             fi
-            echo "WordPress container ID: $WORDPRESS_CONTAINER_ID"
+            echo "INFO: WordPress container ID for script execution: $WORDPRESS_CONTAINER_ID"
 
-            echo "Running composer install for main wp-content..."
-            docker exec -T "$WORDPRESS_CONTAINER_ID" composer install --no-interaction --no-progress --no-dev --optimize-autoloader --working-dir=/var/www/html/wp-content
+            # Define the path to the script that rsync copied to the server
+            COMPOSER_SCRIPT_ON_SERVER_HOST="${{ secrets.SERVER_PROJECT_PATH }}/scripts/server_composer_commands.sh"
+            # Define where to copy it inside the container for execution
+            COMPOSER_SCRIPT_IN_CONTAINER="/tmp/server_composer_commands.sh"
 
-            # --- Universal Composer Install for Plugins ---
-            echo "Searching for composer.json in plugins and running install..."
-            PLUGINS_BASE_DIR_ON_HOST="${{ secrets.SERVER_PROJECT_PATH }}/wp-content/plugins"
-            PLUGINS_BASE_DIR_IN_CONTAINER="/var/www/html/wp-content/plugins"
+            echo "INFO: Making server_composer_commands.sh executable on server..."
+            chmod +x "$COMPOSER_SCRIPT_ON_SERVER_HOST"
 
-            # Find plugin directories that contain a composer.json directly under PLUGINS_BASE_DIR_ON_HOST
-            # This command is run on the GITHUB RUNNER, not on the remote server yet for the find part
-            # No, this needs to run on the server to find the dirs, then loop.
-
-            # Let's execute the find and loop on the remote server directly
-            # This script will be executed on the remote server by appleboy/ssh-action
-            # It finds plugin directories with composer.json and runs composer install in them via docker exec
-
-            # Find all composer.json files in the first level of plugin directories
-            # and then iterate through them to run composer install.
-            # Using a loop executed on the remote server.
-            echo "Looking for plugin composer.json files in $PLUGINS_BASE_DIR_ON_HOST on the server..."
-            for composer_file_path in $(find $PLUGINS_BASE_DIR_ON_HOST -maxdepth 2 -name composer.json); do
-              plugin_dir_on_host=$(dirname "$composer_file_path")
-              # Construct the corresponding path inside the container
-              # We need the relative path from SERVER_PROJECT_PATH to get the path inside the container volume mount
-              # Assuming SERVER_PROJECT_PATH is the root for docker-compose.prod.yml and wp-content is at ./wp-content
-              # So, plugin_dir_in_container will be like /var/www/html/wp-content/plugins/my-plugin
-              plugin_subdir=$(basename "$plugin_dir_on_host")
-              plugin_dir_in_container="$PLUGINS_BASE_DIR_IN_CONTAINER/$plugin_subdir"
+            echo "INFO: Copying composer command script into WordPress container..."
+            docker cp "$COMPOSER_SCRIPT_ON_SERVER_HOST" "$WORDPRESS_CONTAINER_ID":"$COMPOSER_SCRIPT_IN_CONTAINER"
             
-              echo "Found composer.json in plugin directory (host: $plugin_dir_on_host, container: $plugin_dir_in_container)"
-              echo "Running composer install for $plugin_dir_in_container..."
-              docker exec -T "$WORDPRESS_CONTAINER_ID" composer install \
-                --no-interaction \
-                --no-progress \
-                --no-dev \
-                --optimize-autoloader \
-                --working-dir="$plugin_dir_in_container"
-            done
-
-            # --- Universal Composer Install for Themes ---
-            echo "Searching for composer.json in themes and running install..."
-            THEMES_BASE_DIR_ON_HOST="${{ secrets.SERVER_PROJECT_PATH }}/wp-content/themes"
-            THEMES_BASE_DIR_IN_CONTAINER="/var/www/html/wp-content/themes"
-
-            echo "Looking for theme composer.json files in $THEMES_BASE_DIR_ON_HOST on the server..."
-            for composer_file_path in $(find $THEMES_BASE_DIR_ON_HOST -maxdepth 2 -name composer.json); do
-              theme_dir_on_host=$(dirname "$composer_file_path")
-              theme_subdir=$(basename "$theme_dir_on_host")
-              theme_dir_in_container="$THEMES_BASE_DIR_IN_CONTAINER/$theme_subdir"
-
-              echo "Found composer.json in theme directory (host: $theme_dir_on_host, container: $theme_dir_in_container)"
-              echo "Running composer install for $theme_dir_in_container..."
-              docker exec -T "$WORDPRESS_CONTAINER_ID" composer install \
-                --no-interaction \
-                --no-progress \
-                --no-dev \
-                --optimize-autoloader \
-                --working-dir="$theme_dir_in_container"
-            done
+            echo "INFO: Executing composer command script inside WordPress container..."
+            # Run the script using bash inside the container.
+            # No -T flag needed here as appleboy/ssh-action does not allocate a PTY by default for script execution.
+            docker exec "$WORDPRESS_CONTAINER_ID" bash "$COMPOSER_SCRIPT_IN_CONTAINER"
             
-            echo "Deployment finished successfully!"
+            echo "INFO: Removing temporary script from container..."
+            docker exec "$WORDPRESS_CONTAINER_ID" rm -f "$COMPOSER_SCRIPT_IN_CONTAINER"
+            
+            echo "INFO: Deployment finished successfully!"
