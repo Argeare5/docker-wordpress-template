@@ -1,6 +1,3 @@
-# .github/workflows/deploy.yml
-# GitHub Actions workflow for deploying the WordPress application to the server.
-
 name: Deploy WordPress to Server
 
 # Controls when the action will run.
@@ -35,7 +32,7 @@ jobs:
           VAR_PROD_WORDPRESS_TABLE_PREFIX: ${{ secrets.PROD_WORDPRESS_TABLE_PREFIX }}
           VAR_PROD_WORDPRESS_DEBUG: ${{ secrets.PROD_WORDPRESS_DEBUG }}
           VAR_PROD_WP_ENV: ${{ secrets.PROD_WP_ENV }}
-          VAR_PROD_WORDPRESS_FS_METHOD_DIRECT: ${{ secrets.PROD_WORDPRESS_FS_METHOD_DIRECT }}
+          VAR_PROD_WORDPRESS_CONFIG_EXTRA: ${{ secrets.PROD_WORDPRESS_CONFIG_EXTRA }}
           # WordPress Salt secrets (GitHub secrets are named WITHOUT PROD_ prefix)
           VAR_AUTH_KEY: ${{ secrets.AUTH_KEY }}
           VAR_SECURE_AUTH_KEY: ${{ secrets.SECURE_AUTH_KEY }}
@@ -45,9 +42,13 @@ jobs:
           VAR_SECURE_AUTH_SALT: ${{ secrets.SECURE_AUTH_SALT }}
           VAR_LOGGED_IN_SALT: ${{ secrets.LOGGED_IN_SALT }}
           VAR_NONCE_SALT: ${{ secrets.NONCE_SALT }}
-          # phpMyAdmin secrets (if used)
-          VAR_PROD_PHPMYADMIN_PORT: ${{ secrets.PROD_PHPMYADMIN_PORT }}
+          # phpMyAdmin secrets
           VAR_PROD_PHPMYADMIN_UPLOAD_LIMIT: ${{ secrets.PROD_PHPMYADMIN_UPLOAD_LIMIT }}
+          # Secrets for Nginx Proxy, Let's Encrypt, and phpMyAdmin Basic Auth
+          VAR_PROD_DOMAIN_NAME: ${{ secrets.PROD_DOMAIN_NAME }}
+          VAR_PROD_LETSENCRYPT_EMAIL: ${{ secrets.PROD_LETSENCRYPT_EMAIL }}
+          VAR_PROD_PHPMYADMIN_AUTH_USER: ${{ secrets.PROD_PHPMYADMIN_AUTH_USER }} # For phpMyAdmin Basic Auth
+          VAR_PROD_PHPMYADMIN_AUTH_PASS: ${{ secrets.PROD_PHPMYADMIN_AUTH_PASS }} # HASHED password for phpMyAdmin Basic Auth
         run: |
           echo "INFO: Creating .env file for server..."
           # Using a block to redirect all printf output to .env file
@@ -62,7 +63,7 @@ jobs:
             printf "PROD_WORDPRESS_TABLE_PREFIX='%s'\n" "$VAR_PROD_WORDPRESS_TABLE_PREFIX"
             printf "PROD_WORDPRESS_DEBUG='%s'\n" "$VAR_PROD_WORDPRESS_DEBUG"
             printf "PROD_WP_ENV='%s'\n" "$VAR_PROD_WP_ENV"
-            printf "PROD_WORDPRESS_FS_METHOD_DIRECT=\"%s\"\n" "$VAR_PROD_WORDPRESS_FS_METHOD_DIRECT"
+            printf "PROD_WORDPRESS_CONFIG_EXTRA=\"%s\"\n" "$VAR_PROD_WORDPRESS_CONFIG_EXTRA"
             # Writing to .env file WITH PROD_ prefix for consistency with other PROD_ variables,
             # but reading from GitHub Secrets named WITHOUT PROD_ prefix for salts.
             printf "PROD_AUTH_KEY='%s'\n" "$VAR_AUTH_KEY"
@@ -73,8 +74,12 @@ jobs:
             printf "PROD_SECURE_AUTH_SALT='%s'\n" "$VAR_SECURE_AUTH_SALT"
             printf "PROD_LOGGED_IN_SALT='%s'\n" "$VAR_LOGGED_IN_SALT"
             printf "PROD_NONCE_SALT='%s'\n" "$VAR_NONCE_SALT"
-            printf "PROD_PHPMYADMIN_PORT='%s'\n" "$VAR_PROD_PHPMYADMIN_PORT"
             printf "PROD_PHPMYADMIN_UPLOAD_LIMIT='%s'\n" "$VAR_PROD_PHPMYADMIN_UPLOAD_LIMIT"
+            # Variables for Nginx Proxy, Let's Encrypt, and phpMyAdmin Basic Auth
+            printf "PROD_DOMAIN_NAME=\"%s\"\n" "$VAR_PROD_DOMAIN_NAME"
+            printf "PROD_LETSENCRYPT_EMAIL=\"%s\"\n" "$VAR_PROD_LETSENCRYPT_EMAIL"
+            printf "PROD_PHPMYADMIN_AUTH_USER=\"%s\"\n" "$VAR_PROD_PHPMYADMIN_AUTH_USER"
+            printf "PROD_PHPMYADMIN_AUTH_PASS=\"%s\"\n" "$VAR_PROD_PHPMYADMIN_AUTH_PASS" # Remember this should be the HASHED password
           } > .env # This creates .env in the current GITHUB_WORKSPACE root
           echo "INFO: Finished creating .env file in GITHUB_WORKSPACE. Content:"
           cat .env # For debugging, consider removing this for production secrets

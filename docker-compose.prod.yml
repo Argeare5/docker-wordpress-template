@@ -1,66 +1,87 @@
-# docker-compose.prod.yml
-# Defines services for the PRODUCTION/STAGING server environment.
-# This file is deployed to the server (e.g., /home/wordpress-template/docker-compose.prod.yml)
-# and uses the .env file created by the GitHub Actions workflow in the same directory on the server.
-
-# The 'version' attribute is obsolete with Docker Compose V2+ but harmless.
-# You can remove it if you prefer.
-version: '3.8'
-
 services:
-  # Production Database Service
-  db_prod: # Using a distinct service name for production to avoid conflicts
-    image: mysql:8.0 # Or your preferred MySQL version (e.g., mysql:5.7 if RAM is very limited)
-    container_name: ${PROD_PROJECT_NAME}_db # Sourced from server .env file
-    restart: always # Ensures the database container restarts automatically
+  # Nginx Reverse Proxy Service
+  nginx_proxy:
+    image: nginxproxy/nginx-proxy:latest # Using the current nginx-proxy image
+    container_name: ${PROD_PROJECT_NAME}_nginx_proxy # Container name from .env
+    restart: always
+    ports:
+      - "80:80"   # HTTP
+      - "443:443" # HTTPS
     volumes:
-      - prod_db_data:/var/lib/mysql # Named volume for persistent database storage on the server
+      - prod_certs_data:/etc/nginx/certs:ro # SSL certificates (read-only for nginx)
+      - prod_vhost_data:/etc/nginx/vhost.d # Virtual host configurations
+      - prod_html_data:/usr/share/nginx/html # For static files and ACME challenges
+      - /var/run/docker.sock:/tmp/docker.sock:ro # Access to Docker API for container discovery
+    networks:
+      - wordpress_prod_network
+    depends_on: # Although nginx-proxy can start independently, dependencies can be specified for clarity
+      - wordpress_prod # If wordpress_prod should be available when the proxy starts
+
+  # Let's Encrypt ACME Companion Service
+  acme_companion:
+    image: nginxproxy/acme-companion:latest # Using the current companion image for Let's Encrypt
+    container_name: ${PROD_PROJECT_NAME}_acme_companion # Container name from .env
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Access to Docker API
+      - prod_certs_data:/etc/nginx/certs:rw # Read/write access to certificates
+      - prod_vhost_data:/etc/nginx/vhost.d:rw # Read/write access for ACME challenge configurations
+      - prod_html_data:/usr/share/nginx/html:rw # Read/write access for ACME challenge files
     environment:
-      # MySQL credentials and database name, sourced from the server .env file
-      # These .env variables are populated from GitHub Secrets by the CI/CD workflow
+      # Email for Let's Encrypt notifications (e.g., about certificate expiration)
+      DEFAULT_EMAIL: ${PROD_LETSENCRYPT_EMAIL} # From .env file
+      # Specify which nginx-proxy container to use
+      NGINX_PROXY_CONTAINER: ${PROD_PROJECT_NAME}_nginx_proxy
+    depends_on:
+      - nginx_proxy # Should start after or along with nginx_proxy
+    networks:
+      - wordpress_prod_network
+
+  # Production Database Service
+  db_prod:
+    image: mysql:8.0
+    container_name: ${PROD_PROJECT_NAME}_db
+    restart: always
+    volumes:
+      - prod_db_data:/var/lib/mysql
+    environment:
       MYSQL_ROOT_PASSWORD: ${PROD_MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${PROD_MYSQL_DATABASE}
       MYSQL_USER: ${PROD_MYSQL_USER}
       MYSQL_PASSWORD: ${PROD_MYSQL_PASSWORD}
     networks:
-      - wordpress_prod_network # Connects to the production Docker network
+      - wordpress_prod_network
 
   # Production WordPress Service
-  wordpress_prod: # Using a distinct service name for production
-    # This service will be built on the server using the Dockerfile from the repository
+  wordpress_prod:
     build:
-      context: . # Path to the Dockerfile on the server (e.g., /home/wordpress-template/)
+      context: .
       args:
-        WORDPRESS_IMAGE_TAG: php8.2-apache # Specify the base WordPress image tag for production (e.g., latest stable with desired PHP)
-    container_name: ${PROD_PROJECT_NAME}_wordpress # Sourced from server .env file
+        WORDPRESS_IMAGE_TAG: php8.2-apache
+    container_name: ${PROD_PROJECT_NAME}_wordpress
     restart: always
     depends_on:
-      - db_prod # Ensures database service starts before WordPress
-    ports:
-      # This port mapping depends on your server setup (e.g., if using a reverse proxy like Nginx).
-      # If Nginx on the host proxies to this container, map to an internal host port (e.g., "8001:80").
-      # If this container is intended to serve directly on port 80 (less common for production), use "${PROD_WORDPRESS_HOST_PORT}:80" (e.g., "80:80").
-      - "${PROD_WORDPRESS_HOST_PORT}:80" # Sourced from server .env file
+      - db_prod
     volumes:
-      # Mounts wp-content from the path where CI/CD deploys it on the server
       - ./wp-content:/var/www/html/wp-content
-      # Mount custom PHP configuration for uploads (e.g., increase upload_max_filesize)
-      # The config/php/uploads.ini file is deployed by CI/CD.
       - ./config/php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
     environment:
-      # WordPress database connection details, sourced from server .env
-      WORDPRESS_DB_HOST: db_prod:3306 # 'db_prod' is the service name of the production MySQL container
+      WORDPRESS_DB_HOST: db_prod:3306
       WORDPRESS_DB_USER: ${PROD_MYSQL_USER}
       WORDPRESS_DB_PASSWORD: ${PROD_MYSQL_PASSWORD}
       WORDPRESS_DB_NAME: ${PROD_MYSQL_DATABASE}
-      WORDPRESS_TABLE_PREFIX: ${PROD_WORDPRESS_TABLE_PREFIX:-wp_} # Defaults to 'wp_' if not set in .env
-      WORDPRESS_DEBUG: ${PROD_WORDPRESS_DEBUG:-0} # Defaults to 0 (off) for production
-      WP_ENVIRONMENT_TYPE: ${PROD_WP_ENV:-production} # Sets WordPress environment type (e.g., production, staging)
+      WORDPRESS_TABLE_PREFIX: ${PROD_WORDPRESS_TABLE_PREFIX:-wp_}
+      WORDPRESS_DEBUG: ${PROD_WORDPRESS_DEBUG:-0}
+      WP_ENVIRONMENT_TYPE: ${PROD_WP_ENV:-production}
       WORDPRESS_CONFIG_EXTRA: |
-        ${PROD_WORDPRESS_FS_METHOD_DIRECT}
+        ${PROD_WORDPRESS_CONFIG_EXTRA}
+      # Variables for nginx-proxy and acme-companion
+      VIRTUAL_HOST: ${PROD_DOMAIN_NAME},www.${PROD_DOMAIN_NAME} # Your domain and www-subdomain from .env
+      VIRTUAL_PORT: 80 # WordPress inside the container listens on port 80
+      LETSENCRYPT_HOST: ${PROD_DOMAIN_NAME},www.${PROD_DOMAIN_NAME} # Domains for the SSL certificate
+      LETSENCRYPT_EMAIL: ${PROD_LETSENCRYPT_EMAIL} # Email for this specific host (can use DEFAULT_EMAIL from acme_companion)
 
-      # WordPress Salts, sourced from server .env (populated from GitHub Secrets)
-      # Names in .env are PROD_AUTH_KEY etc. as written by CI/CD
+      # WordPress Salts
       AUTH_KEY: ${PROD_AUTH_KEY}
       SECURE_AUTH_KEY: ${PROD_SECURE_AUTH_KEY}
       LOGGED_IN_KEY: ${PROD_LOGGED_IN_KEY}
@@ -70,35 +91,36 @@ services:
       LOGGED_IN_SALT: ${PROD_LOGGED_IN_SALT}
       NONCE_SALT: ${PROD_NONCE_SALT}
     networks:
-      - wordpress_prod_network # Connects to the production Docker network
+      - wordpress_prod_network
 
-  # Optional: phpMyAdmin Service for production (ensure it's highly secured if deployed)
   phpmyadmin_prod:
     image: phpmyadmin/phpmyadmin:latest
-    container_name: ${PROD_PROJECT_NAME}_phpmyadmin # Sourced from server .env file
-    restart: unless-stopped # Or 'always' if you prefer it to always run
+    container_name: ${PROD_PROJECT_NAME}_phpmyadmin
+    restart: unless-stopped
     depends_on:
       - db_prod
-    ports:
-      # Expose phpMyAdmin on a non-standard, configurable port for obscurity.
-      # IMPORTANT: This port MUST be secured (e.g., UFW allow only from specific IPs,
-      # or placed behind a reverse proxy with strong authentication).
-      - "${PROD_PHPMYADMIN_PORT:-8181}:80" # Defaults to host port 8181 if not set in .env
     environment:
-      PMA_HOST: db_prod # Links to the production database service
+      PMA_HOST: db_prod
       PMA_PORT: 3306
-      MYSQL_ROOT_PASSWORD: ${PROD_MYSQL_ROOT_PASSWORD} # For root login to phpMyAdmin (from server .env)
-      UPLOAD_LIMIT: ${PROD_PHPMYADMIN_UPLOAD_LIMIT:-1G} # Max upload size for SQL files (from server .env, defaults to 1G)
-      # Optional: PMA_ABSOLUTE_URI if phpMyAdmin is behind a reverse proxy with a subpath
-      # Example: PMA_ABSOLUTE_URI: https://yourdomain.com/phpmyadmin-path/
+      MYSQL_ROOT_PASSWORD: ${PROD_MYSQL_ROOT_PASSWORD}
+      UPLOAD_LIMIT: ${PROD_PHPMYADMIN_UPLOAD_LIMIT:-1G}
+      VIRTUAL_HOST: pma.${PROD_DOMAIN_NAME}
+      VIRTUAL_PORT: 80
+      LETSENCRYPT_HOST: pma.${PROD_DOMAIN_NAME}
+      LETSENCRYPT_EMAIL: ${PROD_LETSENCRYPT_EMAIL}
+      HTPASSWD_USER: ${PROD_PHPMYADMIN_AUTH_USER} # User for Basic Auth from .env
+      HTPASSWD_PASS: ${PROD_PHPMYADMIN_AUTH_PASS} # Password for Basic Auth from .env
     networks:
-      - wordpress_prod_network # Connects to the production Docker network
+      - wordpress_prod_network
 
 # Named volumes for persistent data storage on the server
 volumes:
-  prod_db_data: {} # Persists database data for the production database service (db_prod)
+  prod_db_data: {} # Persists database data for db_prod
+  prod_certs_data: {} # New volume for SSL certificates
+  prod_vhost_data: {} # New volume for nginx vhost configurations
+  prod_html_data: {}  # New volume for nginx static files (used by acme-companion)
 
 # Custom Docker network for production services
 networks:
   wordpress_prod_network:
-    driver: bridge # Defines the network for services to communicate
+    driver: bridge

@@ -274,21 +274,36 @@ This file is generated on the server (e.g., in `/home/wordpress-template/`) by t
     - *Purpose*: Sets the WordPress environment type.
     - *Example Value in GitHub Secret*: `production` or `staging`.
 
+- **GitHub Secret `PROD_WORDPRESS_CONFIG_EXTRA`** (writes `PROD_WORDPRESS_CONFIG_EXTRA` to server `.env`):
+    - *Purpose*: Sets the WordPress extra configs.
+    - *Example Value in GitHub Secret*: `define('FS_METHOD', 'direct');`.
+
 - **GitHub Secrets for WordPress Salts/Keys (e.g., `AUTH_KEY`, `SECURE_AUTH_KEY`, etc.)**:
     - *Purpose*: Unique WordPress security keys and salts. Critical for security.
     - *GitHub Secret Names*: `AUTH_KEY`, `SECURE_AUTH_KEY`, `LOGGED_IN_KEY`, `NONCE_KEY`, `AUTH_SALT`, `SECURE_AUTH_SALT`, `LOGGED_IN_SALT`, `NONCE_SALT` (these are the names you create in GitHub Secrets UI, **without** a `PROD_` prefix).
     - *Action*: Generate these from [https://api.wordpress.org/secret-key/1.1/salt/](https://api.wordpress.org/secret-key/1.1/salt/) and store each one as a separate GitHub Secret under its respective name (e.g., the value for `define('AUTH_KEY', 'value');` goes into the GitHub Secret named `AUTH_KEY`). Copy only the value part (what's between the single quotes in the `define()` statement).
     - *How they are used*: The GitHub Actions workflow (`deploy.yml`) is configured to read these secrets (e.g., `${{ secrets.AUTH_KEY }}`) and then write them into the server's `.env` file with a `PROD_` prefix (e.g., as `PROD_AUTH_KEY='value_from_AUTH_KEY_secret'`). This ensures consistency in the server `.env` file while allowing you to name the GitHub Secrets for salts more simply. Your `docker-compose.prod.yml` then expects variables like `${PROD_AUTH_KEY}`.
 
-- **GitHub Secret `PROD_PHPMYADMIN_PORT`** (writes `PROD_PHPMYADMIN_PORT` to server `.env`):
-    - *Purpose*: Port for phpMyAdmin on the server (if deployed).
-    - *Example Value in GitHub Secret*: `8181`. **Remember to secure access to this port!**
-    - *Default if unset/empty in `.env`*: `8181` (in `docker-compose.prod.yml`)
-
 - **GitHub Secret `PROD_PHPMYADMIN_UPLOAD_LIMIT`** (writes `PROD_PHPMYADMIN_UPLOAD_LIMIT` to server `.env`):
     - *Purpose*: Sets the `UPLOAD_LIMIT` for phpMyAdmin on the server.
     - *Example Value in GitHub Secret*: `1G`, `256M`.
     - *Default if unset/empty in `.env`*: `1G` (in `docker-compose.prod.yml`)
+
+- **GitHub Secret `PROD_DOMAIN_NAME`** (writes `PROD_DOMAIN_NAME` to server `.env`):
+    - *Purpose*: Sets the domain for your server.
+    - *Example Value in GitHub Secret*: `yourdomain.com`.
+
+- **GitHub Secret `PROD_LETSENCRYPT_EMAIL`** (writes `PROD_LETSENCRYPT_EMAIL` to server `.env`):
+    - *Purpose*: Sets the email for your server LETSENCRYPT.
+    - *Example Value in GitHub Secret*: `youremail@example.com`.
+
+- **GitHub Secret `PROD_PHPMYADMIN_AUTH_USER`** (writes `PROD_PHPMYADMIN_AUTH_USER` to server `.env`):
+    - *Purpose*: Sets the login for proxied phpMyAdmin.
+    - *Example Value in GitHub Secret*: `admin`.
+
+- **GitHub Secret `PROD_PHPMYADMIN_AUTH_PASS`** (writes `PROD_PHPMYADMIN_AUTH_PASS` to server `.env`):
+    - *Purpose*: Sets the hashed password for proxied phpMyAdmin. (docker run --rm httpd:alpine htpasswd -nb admin 'your password')
+    - *Example Value in GitHub Secret*: `hash of password`.
 
 ## Server Setup & Deployment (CI/CD)
 
@@ -305,7 +320,6 @@ To use the CI/CD workflow for deployment, your server (e.g., a DigitalOcean Drop
     - SSH (typically port 22).
     - HTTP (port 80).
     - HTTPS (port 443).
-    - The port for phpMyAdmin (e.g., `8181`), if deployed and accessed directly (ensure this is restricted).
 - **Project Directory:** A directory on the server where the application files will be deployed (e.g., `/home/wordpress-template/` as configured in `SERVER_PROJECT_PATH` secret). The SSH user used by GitHub Actions must have write permissions to this directory.
 
 *(Refer to earlier parts of this conversation or standard server setup guides for detailed instructions on installing Docker, Docker Compose, and configuring UFW if you are setting up a new server from scratch.)*
@@ -333,7 +347,7 @@ Navigate to your GitHub repository settings: `Settings` -> `Secrets and variable
     - `PROD_WORDPRESS_TABLE_PREFIX` (e.g., `wp_`; optional if default `wp_` is fine)
     - `PROD_WORDPRESS_DEBUG` (should be `0` for production)
     - `PROD_WP_ENV` (e.g., `production` or `staging`)
-    - `PROD_WORDPRESS_FS_METHOD_DIRECT` (e.g., `define( 'FS_METHOD', 'direct' );`)
+    - `WORDPRESS_CONFIG_EXTRA` (e.g., `define('FS_METHOD', 'direct');\nif (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) && \$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {\n  \$_SERVER['HTTPS'] = 'on';\n}`)
 
 - **WordPress Salts/Keys Secrets (these GitHub Secrets are named *without* a `PROD_` prefix):**
     - *Description*: Unique WordPress security keys and salts. Generate these from [https://api.wordpress.org/secret-key/1.1/salt/](https://api.wordpress.org/secret-key/1.1/salt/). Copy **only the value part** (what's between the single quotes in the `define()` statement from the generator) into each corresponding GitHub Secret.
@@ -349,8 +363,13 @@ Navigate to your GitHub repository settings: `Settings` -> `Secrets and variable
     - *Usage*: The CI/CD workflow reads these secrets and writes them to the server's `.env` file with a `PROD_` prefix (e.g., the GitHub Secret `AUTH_KEY` becomes `PROD_AUTH_KEY='value'` in the server `.env` file).
 
 - **phpMyAdmin Configuration Secrets (optional, if deploying phpMyAdmin; these will be written to the server's `.env` file prefixed with `PROD_`):**
-    - `PROD_PHPMYADMIN_PORT` (e.g., `8181`; remember to secure this port)
     - `PROD_PHPMYADMIN_UPLOAD_LIMIT` (e.g., `1G` or `256M`)
+
+- **LETSENCRYPT Configuration secrets:**
+    - `PROD_DOMAIN_NAME` (e.g., `yourdomain.com`)
+    - `PROD_LETSENCRYPT_EMAIL` (e.g., `youremail@example.com`)
+    - `PROD_PHPMYADMIN_AUTH_USER` (e.g., `phpMyAdmin login`)
+    - `PROD_PHPMYADMIN_AUTH_PASS` (e.g., `phpMyAdmin hashed password`)
 
 ### CI/CD Workflow
 The CI/CD workflow is defined in the file `.github/workflows/deploy.yml` in your repository.
@@ -483,17 +502,6 @@ This section lists common issues you might encounter and how to resolve them.
 ## Further Customization / Advanced Topics
 
 This template provides a solid foundation. Here are some areas you might want to explore for further customization or more advanced setups:
-
-- **Nginx as a Reverse Proxy on the Server:**
-    - For a production environment, it's highly recommended to set up Nginx (or Apache) on your host server (or in a separate Docker container) to act as a reverse proxy in front of your WordPress Docker container.
-    - **Benefits:**
-        - **SSL/HTTPS Termination:** Nginx can handle SSL certificates (e.g., from Let's Encrypt) and serve your site over HTTPS, encrypting traffic between the user and the server. The connection between Nginx and your WordPress container can then be plain HTTP within the Docker network.
-        - **Serving Static Assets:** Nginx can be configured to serve static assets (images, CSS, JS) directly, which can be more efficient than serving them through PHP/WordPress.
-        - **Caching:** Implement server-level caching (e.g., FastCGI cache for PHP, browser caching headers).
-        - **Security Headers:** Add security-related HTTP headers (HSTS, CSP, X-Frame-Options, etc.).
-        - **Load Balancing:** If you scale to multiple WordPress containers.
-        - **Serving Multiple Sites:** Nginx can manage multiple domain names and proxy them to different backend applications or containers.
-    - **Setup:** This typically involves installing Nginx on your server, configuring a server block (virtual host) for your domain, and setting up `proxy_pass` directives to forward requests to the port exposed by your `wordpress_prod` Docker container (e.g., `localhost:8001` if you mapped the container's port 80 to host port 8001 and Nginx listens on 80/443).
 
 - **Database and File Backups:**
     - Implement a robust and regular backup strategy for:
