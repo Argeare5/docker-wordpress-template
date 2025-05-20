@@ -347,7 +347,15 @@ Navigate to your GitHub repository settings: `Settings` -> `Secrets and variable
     - `PROD_WORDPRESS_TABLE_PREFIX` (e.g., `wp_`; optional if default `wp_` is fine)
     - `PROD_WORDPRESS_DEBUG` (should be `0` for production)
     - `PROD_WP_ENV` (e.g., `production` or `staging`)
-    - `WORDPRESS_CONFIG_EXTRA` (e.g., `define('FS_METHOD', 'direct');\nif (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) && \$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {\n  \$_SERVER['HTTPS'] = 'on';\n}`)
+    - `WORDPRESS_CONFIG_EXTRA` (e.g., `define('FS_METHOD', 'direct');
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+$_SERVER['HTTPS'] = 'on';
+}
+define('WP_HOME', 'your domain');
+define('WP_SITEURL', 'your domain');
+if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
+$_SERVER['HTTP_HOST'] = $_SERVER['HTTP_X_FORWARDED_HOST'];
+}`)
 
 - **WordPress Salts/Keys Secrets (these GitHub Secrets are named *without* a `PROD_` prefix):**
     - *Description*: Unique WordPress security keys and salts. Generate these from [https://api.wordpress.org/secret-key/1.1/salt/](https://api.wordpress.org/secret-key/1.1/salt/). Copy **only the value part** (what's between the single quotes in the `define()` statement from the generator) into each corresponding GitHub Secret.
